@@ -2,6 +2,6 @@ package accionSemantica;
 
 public interface AccionSemantica {
 
-    public void ejecutar();
+    public boolean ejecutar(String buffer, char caracter);
 
 }

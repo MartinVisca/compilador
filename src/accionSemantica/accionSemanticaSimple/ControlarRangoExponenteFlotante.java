@@ -1,8 +1,7 @@
 package accionSemantica.accionSemanticaSimple;
 
-import accionSemantica.AccionSemantica;
-
-public class ControlarRangoExponenteFlotante implements AccionSemantica {
+@SuppressWarnings("all")
+public class ControlarRangoExponenteFlotante extends AccionSemanticaSimple {
 
     private static final int RANGO_MAXIMO = 38;
     private static final int RANGO_MINIMO = -38;
@@ -21,9 +20,6 @@ public class ControlarRangoExponenteFlotante implements AccionSemantica {
     public boolean ejecutar(String buffer, char caracter) {
         int numero = Integer.valueOf(buffer);
 
-        if (numero >= this.RANGO_MINIMO && numero <= this.RANGO_MAXIMO)
-            return true;
-
-        return false;
+        return (numero >= this.RANGO_MINIMO && numero <= this.RANGO_MAXIMO);
     }
 }

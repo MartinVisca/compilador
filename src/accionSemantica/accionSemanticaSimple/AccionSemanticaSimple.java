@@ -6,7 +6,7 @@ import analizadorLexico.AnalizadorLexico;
 @SuppressWarnings("all")
 public abstract class AccionSemanticaSimple implements AccionSemantica {
 
-    AnalizadorLexico analizadorLexico;
+    private AnalizadorLexico analizadorLexico;
 
     public AccionSemanticaSimple() {
         this.analizadorLexico = new AnalizadorLexico();

@@ -8,8 +8,8 @@ public abstract class AccionSemanticaSimple implements AccionSemantica {
 
     private AnalizadorLexico analizadorLexico;
 
-    public AccionSemanticaSimple() {
-        this.analizadorLexico = new AnalizadorLexico();
+    public AccionSemanticaSimple(AnalizadorLexico analizadorLexico) {
+        this.analizadorLexico = analizadorLexico;
     }
 
     public AnalizadorLexico getAnalizadorLexico() {

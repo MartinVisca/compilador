@@ -131,4 +131,8 @@ public class AnalizadorLexico {
     public void setArchivo(String archivo) {
         this.archivo = archivo;
     }
+
+    public Boolean esPalabraReservada(String posiblePalabra) {
+        return this.tokens.contains(posiblePalabra);
+    }
 }

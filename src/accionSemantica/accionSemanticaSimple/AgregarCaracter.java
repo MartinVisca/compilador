@@ -1,9 +1,13 @@
 package accionSemantica.accionSemanticaSimple;
 
+import analizadorLexico.AnalizadorLexico;
+
 @SuppressWarnings("all")
 public class AgregarCaracter extends AccionSemanticaSimple {
 
-    public AgregarCaracter() {}
+    public AgregarCaracter(AnalizadorLexico analizadorLexico) {
+        super(analizadorLexico);
+    }
 
     @Override
     public boolean ejecutar(String buffer, char caracter) {
@@ -11,4 +15,5 @@ public class AgregarCaracter extends AccionSemanticaSimple {
 
         return true;
     }
+
 }

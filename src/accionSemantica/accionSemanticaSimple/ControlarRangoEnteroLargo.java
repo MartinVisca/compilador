@@ -1,12 +1,16 @@
 package accionSemantica.accionSemanticaSimple;
 
+import analizadorLexico.AnalizadorLexico;
+
 @SuppressWarnings("all")
 public class ControlarRangoEnteroLargo extends AccionSemanticaSimple {
 
     private static final String RANGO_MAXIMO = String.valueOf(Math.pow(2l, 31l));
     private static final String RANGO_MINIMO = String.valueOf(Math.pow(-2l, 31l));
 
-    public ControlarRangoEnteroLargo() {}
+    public ControlarRangoEnteroLargo(AnalizadorLexico analizadorLexico) {
+        super(analizadorLexico);
+    }
 
     public static String getRangoMaximo() {
         return RANGO_MAXIMO;

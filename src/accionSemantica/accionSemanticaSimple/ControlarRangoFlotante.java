@@ -1,5 +1,7 @@
 package accionSemantica.accionSemanticaSimple;
 
+import analizadorLexico.AnalizadorLexico;
+
 @SuppressWarnings("all")
 public class ControlarRangoFlotante extends AccionSemanticaSimple {
 
@@ -9,7 +11,9 @@ public class ControlarRangoFlotante extends AccionSemanticaSimple {
     private static final float MAXIMO_RANGO_POSITIVO = 3.40282347f+38;
     private static final float RANGO_CERO = 0.0f;
 
-    public ControlarRangoFlotante() {}
+    public ControlarRangoFlotante(AnalizadorLexico analizadorLexico) {
+        super(analizadorLexico);
+    }
 
     public static float getMaximoRangoNegativo() {
         return MAXIMO_RANGO_NEGATIVO;
@@ -39,4 +43,5 @@ public class ControlarRangoFlotante extends AccionSemanticaSimple {
             (numero < this.MAXIMO_RANGO_POSITIVO && numero > this.MINIMO_RANGO_POSITIVO) ||
             (numero == this.RANGO_CERO));
     }
+
 }

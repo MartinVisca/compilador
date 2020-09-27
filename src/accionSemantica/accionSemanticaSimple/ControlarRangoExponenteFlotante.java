@@ -1,12 +1,16 @@
 package accionSemantica.accionSemanticaSimple;
 
+import analizadorLexico.AnalizadorLexico;
+
 @SuppressWarnings("all")
 public class ControlarRangoExponenteFlotante extends AccionSemanticaSimple {
 
     private static final int RANGO_MAXIMO = 38;
     private static final int RANGO_MINIMO = -38;
 
-    public ControlarRangoExponenteFlotante(){}
+    public ControlarRangoExponenteFlotante(AnalizadorLexico analizadorLexico) {
+        super(analizadorLexico);
+    }
 
     public static int getRangoMaximo() {
         return RANGO_MAXIMO;

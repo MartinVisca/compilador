@@ -11,6 +11,8 @@ public class RegistroSimbolo {
 
     public static final int INCREMENTO = 1;
 
+    public RegistroSimbolo() {}
+
     public RegistroSimbolo(String lexema, String tipoToken) {
         this.lexema = lexema;
         this.tipoToken = tipoToken;

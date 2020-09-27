@@ -4,14 +4,14 @@ public class Token {
 
     private int id;
     private String lexema;
-    private int nroLinea;
+    //private int nroLinea;
     private String tipo;
     private RegistroSimbolo registro;
 
-    public Token(int id, String lexema, int nroLinea, String tipo, RegistroSimbolo registro) {
+    public Token(int id, String lexema, /*int nroLinea,*/ String tipo, RegistroSimbolo registro) {
         this.id = id;
         this.lexema = lexema;
-        this.nroLinea = nroLinea;
+        //this.nroLinea = nroLinea;
         this.tipo = tipo;
         this.registro = registro;
     }
@@ -32,6 +32,7 @@ public class Token {
         this.lexema = lexema;
     }
 
+    /*
     public int getNroLinea() {
         return nroLinea;
     }
@@ -39,6 +40,7 @@ public class Token {
     public void setNroLinea(int nroLinea) {
         this.nroLinea = nroLinea;
     }
+     */
 
     public String getTipo() {
         return tipo;

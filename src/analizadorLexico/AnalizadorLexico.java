@@ -10,7 +10,6 @@ public class AnalizadorLexico {
 
     private String buffer;
     private String archivo;
-    // TODO: 21/9/20 Definir lista de parámetros
     private Hashtable<String, Integer> idTokens;
     private Vector<RegistroSimbolo> tablaSimbolos;
     private Vector<Token> tokens;
@@ -162,12 +161,46 @@ public class AnalizadorLexico {
     }
 
     public int getIdToken(String stringToken) {
-        // TODO: 26/9/20 Completar
-        return -1;
+        int idToken = -1;
+
+        if (this.idTokens.contains(stringToken))
+            idToken = this.idTokens.get(stringToken);
+        else if (this.esConstante(stringToken))
+            idToken = this.idTokens.get(CONSTANTE);
+        else if (this.esIdentificador(stringToken))
+            idToken = this.idTokens.get(IDENTIFICADOR);
+
+        return idToken;
     }
 
     public String getTipoToken(String stringToken) {
         // TODO: 26/9/20 Completar
         return "";
+    }
+
+    private Boolean esConstante(String stringToken) {
+        if (stringToken.contains("_l"))
+            return true;
+        else {
+            for (int i = 0; i < stringToken.length(); i++) {
+                Character c = stringToken.charAt(i);
+
+                if (!(c.equals('f') || Character.isDigit(c)) || c.equals('.'))
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    private Boolean esIdentificador(String stringToken) {
+        for (int i = 0; i < stringToken.length(); i++) {
+            Character c = stringToken.charAt(i);
+
+            if (!(c.equals('_') || Character.isDigit(c) || (Character.isLetter(c) && Character.isLowerCase(c))))
+                return false;
+        }
+
+        return true;
     }
 }

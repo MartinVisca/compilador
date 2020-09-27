@@ -16,6 +16,11 @@ public class AnalizadorLexico {
 
     public static final String IDENTIFICADOR = "ID";
     public static final String CONSTANTE = "CTE";
+    public static final String OPERADOR = "OPERADOR ARITMETICO";
+    public static final String SIMBOLO_PUNTUACION = "SIMBOLO DE PUNTUACION";
+    public static final String COMPARADOR = "COMPARADOR";
+    public static final String ASIGNACION = "ASIGNACION";
+    public static final String PALABRA_RESERVADA = "PALABRA RESERVADA";
 
     public AnalizadorLexico(String archivo) {
         this.archivo = archivo;
@@ -51,6 +56,10 @@ public class AnalizadorLexico {
         //Asignación
         this.idTokens.put("=", 466);
 
+        //Identificador y constante
+        this.idTokens.put("ID", 470);
+        this.idTokens.put("CTE", 471);
+
         //Palabras reservadas
         this.idTokens.put("IF", 480);
         this.idTokens.put("ELSE", 481);
@@ -62,10 +71,6 @@ public class AnalizadorLexico {
         this.idTokens.put("FOR", 487);
         this.idTokens.put("LONGINT", 488);
         this.idTokens.put("FLOAT", 489);
-
-        //Identificador y constante
-        this.idTokens.put("ID", 430);
-        this.idTokens.put("CTE", 431);
 
 
         /***** ACCIONES SEMÁNTICAS *****/
@@ -150,7 +155,7 @@ public class AnalizadorLexico {
 
     public void addToken(String stringToken) {
         int idToken = this.getIdToken(stringToken);
-        String tipoToken = this.getTipoToken(stringToken);
+        String tipoToken = this.getTipoToken(idToken);
         RegistroSimbolo simbolo = new RegistroSimbolo(stringToken, tipoToken);
 
         if ((tipoToken.equals(this.IDENTIFICADOR) || tipoToken.equals(this.CONSTANTE)) && !this.tablaSimbolos.contains(simbolo))
@@ -173,8 +178,22 @@ public class AnalizadorLexico {
         return idToken;
     }
 
-    public String getTipoToken(String stringToken) {
-        // TODO: 26/9/20 Completar
+    public String getTipoToken(int idToken) {
+        if (idToken >= 440 && idToken <= 443)
+            return this.OPERADOR;
+        else if (idToken >= 450 && idToken <= 455)
+            return this.SIMBOLO_PUNTUACION;
+        else if (idToken >= 460 && idToken <= 465)
+            return this.COMPARADOR;
+        else if (idToken == 466)
+            return this.ASIGNACION;
+        else if (idToken == 470)
+            return this.IDENTIFICADOR;
+        else if (idToken == 471)
+            return this.CONSTANTE;
+        else if (idToken >= 480 && idToken <= 489)
+            return this.PALABRA_RESERVADA;
+
         return "";
     }
 

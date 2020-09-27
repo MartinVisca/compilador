@@ -25,6 +25,7 @@ public class AnalizadorLexico {
         this.tablaSimbolos = new Vector<>();
         this.tokens = new Vector<>();
 
+
         /***** CARGA DE TOKENS *****/
         //Operadores aritméticos
         this.idTokens.put("+", 440);
@@ -67,13 +68,14 @@ public class AnalizadorLexico {
         this.idTokens.put("ID", 430);
         this.idTokens.put("CTE", 431);
 
-        // TODO: 21/9/20  Definición de acciones semánticas
+
         /***** ACCIONES SEMÁNTICAS *****/
-        AccionSemanticaSimple accionSemantica13 = new InicializarBuffer(); //AS13 -> Inicializar buffer
-        AccionSemanticaSimple accionSemantica2 = new AgregarCaracter(); //AS2 -> Agregar caracter
-        AccionSemanticaSimple accionSemantica15 = new ControlarLongitudIdentificador(); //AS15 -> Controlar longitud del identificador
-        AccionSemanticaSimple accionSemantica4 = new ControlarPalabraReservada(this);
-        AccionSemanticaSimple accionSemantica14 = new CrearToken(this);
+        AccionSemanticaSimple accionSemantica2 = new AgregarCaracter(); //AS2 -> Agregar caracter.
+        AccionSemanticaSimple accionSemantica4 = new ControlarPalabraReservada(this); //AS4 -> Controlar si el buffer es palabra reservada.
+        AccionSemanticaSimple accionSemantica12 = new DescartarBuffer(this); //AS12 -> Descartar el buffer y poner el último caracter al inicio del próximo.
+        AccionSemanticaSimple accionSemantica13 = new InicializarBuffer(); //AS13 -> Inicializar buffer.
+        AccionSemanticaSimple accionSemantica14 = new CrearToken(this); //AS14 -> Crear token.
+        AccionSemanticaSimple accionSemantica15 = new ControlarLongitudIdentificador(); //AS15 -> Controlar longitud del identificador.
 
         //AS1 -> Inicializar buffer y agregar caracter a la cadena que contiene.
         AccionSemanticaCompuesta accionSemantica1 = new AccionSemanticaCompuesta();
@@ -95,28 +97,30 @@ public class AnalizadorLexico {
         AccionSemanticaCompuesta accionSemantica6 = new AccionSemanticaCompuesta();
         accionSemantica6.addAccion(new ControlarRangoEnteroLargo());
         accionSemantica6.addAccion(accionSemantica14);
-        // TODO: 23/9/20 Programar UltimoCaracterAlInicio
+        accionSemantica6.addAccion(accionSemantica12);
 
         //AS7 -> Controlar rango de flotante; crea el token en caso de ser correcto. Ultimo caracter al inicio del próximo buffer.
         AccionSemanticaCompuesta accionSemantica7 = new AccionSemanticaCompuesta();
         accionSemantica7.addAccion(new ControlarRangoFlotante());
         accionSemantica7.addAccion(accionSemantica14);
-        // TODO: 23/9/20 Programar UltimoCaracterAlInicio
+        accionSemantica7.addAccion(accionSemantica12);
 
         //AS8 -> Controlar rango de exponente de flotante; crea el token en caso de ser correcto. Ultimo caracter al inicio del próximo buffer.
         AccionSemanticaCompuesta accionSemantica8 = new AccionSemanticaCompuesta();
         accionSemantica8.addAccion(new ControlarRangoExponenteFlotante());
         accionSemantica8.addAccion(accionSemantica14);
-        // TODO: 23/9/20 Programar UltimoCaracterAlInicio
+        accionSemantica8.addAccion(accionSemantica12);
 
         //AS9 -> Agregar caracter y crear el token.
         AccionSemanticaCompuesta accionSemantica9 = new AccionSemanticaCompuesta();
         accionSemantica9.addAccion(accionSemantica2);
         accionSemantica9.addAccion(accionSemantica14);
 
-        //AS12 -> Descarta el buffer.
-        // TODO: 23/9/20 Programar DescartarBuffer
-        
+        //AS10 -> Crear el token y descartar el buffer.
+        AccionSemanticaCompuesta accionSemantica10 = new AccionSemanticaCompuesta();
+        accionSemantica10.addAccion(accionSemantica14);
+        accionSemantica10.addAccion(accionSemantica12);
+
         /****/
         // TODO: 21/9/20  Definición matriz de acciones semánticas
         /****/

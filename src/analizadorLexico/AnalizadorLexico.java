@@ -165,10 +165,6 @@ public class AnalizadorLexico {
         this.tokens.add(token);
     }
 
-    public Vector<Token> getTokens() {
-        return (Vector<Token>) tokens.clone();
-    }
-
     public int getIdToken(String stringToken) {
         int idToken = -1;
 

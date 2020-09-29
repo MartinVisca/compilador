@@ -27,6 +27,13 @@ public class ControlarRangoEnteroLargo extends AccionSemanticaSimple {
         long minimo = Long.valueOf(this.RANGO_MINIMO);
 
         //Chequeo por rango -2^31 < x < 2^31 - 1.
-        return (numero < maximo && numero >= minimo);
+        if (numero < maximo && numero >= minimo)
+            return true;
+        else {
+            String error = "El entero largo indicado no está dentro del rango permitido.";
+            int linea = this.getAnalizadorLexico().getLinea();
+            this.getAnalizadorLexico().addErrorLexico(error, linea);
+            return false;
+        }
     }
 }

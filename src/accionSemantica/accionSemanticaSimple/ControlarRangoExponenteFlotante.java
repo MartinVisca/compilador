@@ -24,6 +24,13 @@ public class ControlarRangoExponenteFlotante extends AccionSemanticaSimple {
     public boolean ejecutar(String buffer, char caracter) {
         int numero = Integer.valueOf(buffer);
 
-        return (numero >= this.RANGO_MINIMO && numero <= this.RANGO_MAXIMO);
+        if (numero >= this.RANGO_MINIMO && numero <= this.RANGO_MAXIMO)
+            return true;
+        else {
+            String error = "El exponente indicado no está dentro del rango permitido.";
+            int linea = this.getAnalizadorLexico().getLinea();
+            this.getAnalizadorLexico().addErrorLexico(error, linea);
+            return false;
+        }
     }
 }

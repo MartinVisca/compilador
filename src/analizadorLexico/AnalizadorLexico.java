@@ -15,7 +15,9 @@ public class AnalizadorLexico {
     private Hashtable<String, Integer> idTokens;
     private Vector<RegistroSimbolo> tablaSimbolos;
     private Vector<Token> tokens;
-    private MatrizAccionesSemanticas mat;
+    private MatrizAccionesSemanticas matrizAccionesSemanticas;
+    private Hashtable<String, Integer> erroresLexicos;
+    private int linea;
 
     public static final String IDENTIFICADOR = "ID";
     public static final String CONSTANTE = "CTE";
@@ -31,6 +33,9 @@ public class AnalizadorLexico {
         this.idTokens = new Hashtable<>();
         this.tablaSimbolos = new Vector<>();
         this.tokens = new Vector<>();
+        this.matrizAccionesSemanticas = new MatrizAccionesSemanticas();
+        this.erroresLexicos = new Hashtable<>();
+        this.linea = 0;
 
 
         /***** CARGA DE TOKENS *****/
@@ -131,7 +136,7 @@ public class AnalizadorLexico {
         /****/
 
         //NICO
-        AccionSemantica[][] matas = {
+        AccionSemantica[][] matrizAS = {
                 {accionSemantica1, accionSemantica1, accionSemantica1, null, null, null, accionSemantica1, accionSemantica1, accionSemantica1, accionSemantica1, accionSemantica3, accionSemantica3, accionSemantica3, accionSemantica1, null, null, null, accionSemantica3, accionSemantica3, accionSemantica1, accionSemantica3, accionSemantica3, accionSemantica3, accionSemantica3, null, null,},
                 {null, accionSemantica2, accionSemantica2, accionSemantica2, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,},
                 {null, null, null, null, accionSemantica2, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,},
@@ -146,7 +151,7 @@ public class AnalizadorLexico {
                 {accionSemantica10, accionSemantica10, accionSemantica5, accionSemantica10, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5, accionSemantica5,},
                 {accionSemantica6, null, accionSemantica6, null, null, accionSemantica6, accionSemantica6, accionSemantica6, accionSemantica6, accionSemantica6, accionSemantica6, accionSemantica6, accionSemantica6, accionSemantica6, accionSemantica6, accionSemantica6, accionSemantica6, accionSemantica6, accionSemantica6, accionSemantica6, accionSemantica6, accionSemantica6, accionSemantica6, accionSemantica6, accionSemantica6, accionSemantica6,},
         };
-        this.mat.set(matas);
+        this.matrizAccionesSemanticas.set(matrizAS);
 
         /*
         //|-----------------0------------------------------------|----------------------------------------1----------------|----------------------------------------2----------------|-------------------------------------3-------------------|---------------------------------------4----------------|---------------------------------------5----------------|---------------------------------------6----------------|--------------------------------------7----------------|---------------------------------------8----------------|----------------------------------------9----------------|----------------------------------------10----------------|----------------11----------------|----------------12----------------|----------------13----------------|----------------14----------------|----------------15----------------|----------------16----------------|----------------17----------------|----------------18----------------|----------------19----------------|----------------20----------------|----------------21----------------|----------------22----------------|----------------23----------------|----------------24----------------|----------------25----------------|----------------26----------------|
@@ -164,10 +169,6 @@ public class AnalizadorLexico {
         this.mat.set(11,0,accionSemantica15);this.mat.set(11,1,accionSemantica15);this.mat.set(11,2,accionSemantica5); this.mat.set(11,3,accionSemantica15);this.mat.set(11,4,accionSemantica5);this.mat.set(11,5,accionSemantica5);this.mat.set(11,6,accionSemantica5);this.mat.set(11,7,accionSemantica5);this.mat.set(11,8,accionSemantica5);this.mat.set(11,9,accionSemantica5);  this.mat.set(11,10,accionSemantica5);this.mat.set(11,11,);this.mat.set(,12,);this.mat.set(,13,);this.mat.set(,14,);this.mat.set(,15,);this.mat.set(,16,);this.mat.set(,17,);this.mat.set(,18,);this.mat.set(,19,);this.mat.set(,20,);this.mat.set(,21,);this.mat.set(,22,);this.mat.set(,23,);this.mat.set(,24,);this.mat.set(,25,);
         this.mat.set(12,0,accionSemantica6); this.mat.set(12,1,-);                this.mat.set(12,2,accionSemantica6); this.mat.set(12,3,-);                this.mat.set(12,4,-);               this.mat.set(12,5,accionSemantica9);this.mat.set(12,6,accionSemantica6);this.mat.set(12,7,accionSemantica6);this.mat.set(12,8,accionSemantica6);this.mat.set(12,9,accionSemantica6);  this.mat.set(12,10,accionSemantica6);this.mat.set(12,11,);this.mat.set(,12,);this.mat.set(,13,);this.mat.set(,14,);this.mat.set(,15,);this.mat.set(,16,);this.mat.set(,17,);this.mat.set(,18,);this.mat.set(,19,);this.mat.set(,20,);this.mat.set(,21,);this.mat.set(,22,);this.mat.set(,23,);this.mat.set(,24,);this.mat.set(,25,);
         */
-        /****/
-        // TODO: 21/9/20  Definición matriz de estados
-        /****/
-        
     }
 
     public String getBuffer() {
@@ -186,6 +187,18 @@ public class AnalizadorLexico {
         this.archivo = archivo;
     }
 
+    public Vector<Token> getTokens() {
+        return (Vector<Token>) tokens.clone();
+    }
+
+    public int getLinea() {
+        return linea;
+    }
+
+    public void setLinea(int linea) {
+        this.linea = linea;
+    }
+
     public Boolean esPalabraReservada(String posiblePalabra) {
         return this.idTokens.contains(posiblePalabra);
     }
@@ -200,10 +213,6 @@ public class AnalizadorLexico {
 
         Token token = new Token(idToken, stringToken, tipoToken, simbolo);
         this.tokens.add(token);
-    }
-
-    public Vector<Token> getTokens() {
-        return (Vector<Token>) tokens.clone();
     }
 
     public int getIdToken(String stringToken) {
@@ -262,5 +271,9 @@ public class AnalizadorLexico {
         }
 
         return true;
+    }
+
+    public void addErrorLexico(String errorLexico, int linea) {
+        this.erroresLexicos.put(errorLexico, linea);
     }
 }

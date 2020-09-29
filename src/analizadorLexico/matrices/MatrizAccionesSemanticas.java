@@ -6,6 +6,8 @@ public class MatrizAccionesSemanticas {
 
     private AccionSemantica[][] matriz;
 
+    public MatrizAccionesSemanticas() {}
+
     public MatrizAccionesSemanticas(int estadosOrigen, int simbolos) {
         this.matriz = new AccionSemantica[estadosOrigen][simbolos];
     }

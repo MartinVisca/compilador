@@ -39,9 +39,16 @@ public class ControlarRangoFlotante extends AccionSemanticaSimple {
     public boolean ejecutar(String buffer, char caracter) {
         float numero = Float.valueOf(buffer);
 
-        return ((numero < this.MAXIMO_RANGO_NEGATIVO && numero > this.MINIMO_RANGO_NEGATIVO) ||
+        if ((numero < this.MAXIMO_RANGO_NEGATIVO && numero > this.MINIMO_RANGO_NEGATIVO) ||
             (numero < this.MAXIMO_RANGO_POSITIVO && numero > this.MINIMO_RANGO_POSITIVO) ||
-            (numero == this.RANGO_CERO));
+            (numero == this.RANGO_CERO))
+            return true;
+        else {
+            String error = "El flotante indicado no está dentro del rango permitido.";
+            int linea = this.getAnalizadorLexico().getLinea();
+            this.getAnalizadorLexico().addErrorLexico(error, linea);
+            return false;
+        }
     }
 
 }

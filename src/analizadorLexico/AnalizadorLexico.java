@@ -107,9 +107,9 @@ public class AnalizadorLexico {
 
         //AS6 -> Controlar el rango de un entero largo; crea el token en caso de ser correcto. Ultimo caracter al inicio del próximo buffer.
         AccionSemanticaCompuesta accionSemantica6 = new AccionSemanticaCompuesta();
+        accionSemantica6.addAccion(accionSemantica2);
         accionSemantica6.addAccion(new ControlarRangoEnteroLargo(this));
         accionSemantica6.addAccion(accionSemantica14);
-        accionSemantica6.addAccion(accionSemantica12);
 
         //AS7 -> Controlar rango de flotante; crea el token en caso de ser correcto. Ultimo caracter al inicio del próximo buffer.
         AccionSemanticaCompuesta accionSemantica7 = new AccionSemanticaCompuesta();

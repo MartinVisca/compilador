@@ -87,7 +87,6 @@ public class AnalizadorLexico {
         AccionSemanticaSimple accionSemantica12 = new DescartarBuffer(this); //AS12 -> Descartar el buffer y poner el último caracter al inicio del próximo.
         AccionSemanticaSimple accionSemantica13 = new InicializarBuffer(this); //AS13 -> Inicializar buffer.
         AccionSemanticaSimple accionSemantica14 = new CrearToken(this); //AS14 -> Crear token.
-        AccionSemanticaSimple accionSemantica15 = new ControlarLongitudIdentificador(this); //AS15 -> Controlar longitud del identificador.
 
         //AS1 -> Inicializar buffer y agregar caracter a la cadena que contiene.
         AccionSemanticaCompuesta accionSemantica1 = new AccionSemanticaCompuesta();
@@ -132,6 +131,11 @@ public class AnalizadorLexico {
         AccionSemanticaCompuesta accionSemantica10 = new AccionSemanticaCompuesta();
         accionSemantica10.addAccion(accionSemantica14);
         accionSemantica10.addAccion(accionSemantica12);
+
+        //AS15 -> Controlar longitud del identificador.
+        AccionSemanticaCompuesta accionSemantica15 = new AccionSemanticaCompuesta();
+        accionSemantica15.addAccion(accionSemantica2);
+        accionSemantica15.addAccion(new ControlarLongitudIdentificador(this));
 
         /****/
 

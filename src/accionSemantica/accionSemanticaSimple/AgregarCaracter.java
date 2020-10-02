@@ -26,16 +26,26 @@ public class AgregarCaracter extends AccionSemanticaSimple {
     public boolean ejecutar(String buffer, char caracter) {
         if (this.caracteresPermitidos.isEmpty()) {
             String auxiliar = buffer + caracter;
+            this.getAnalizadorLexico().setBuffer(auxiliar);
             return true;
         } else {
             if (this.caracteresPermitidos.contains('d')) {
-                if (Character.isDigit(caracter))
+                if (Character.isDigit(caracter)) {
+                    String auxiliar = buffer + caracter;
+                    this.getAnalizadorLexico().setBuffer(auxiliar);
                     return true;
+                }
             }
-            else if ((this.caracteresPermitidos.contains('_') && caracter == '_') || (this.caracteresPermitidos.contains('.') && caracter == '.'))
+            else if ((this.caracteresPermitidos.contains('_') && caracter == '_') || (this.caracteresPermitidos.contains('.') && caracter == '.')) {
+                String auxiliar = buffer + caracter;
+                this.getAnalizadorLexico().setBuffer(auxiliar);
                 return true;
-            else if (this.caracteresPermitidos.contains('l') && caracter == 'l')
+            }
+            else if (this.caracteresPermitidos.contains('l') && caracter == 'l') {
+                String auxiliar = buffer + caracter;
+                this.getAnalizadorLexico().setBuffer(auxiliar);
                 return true;
+            }
         }
         return false;
     }

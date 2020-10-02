@@ -16,8 +16,8 @@ public class MatrizAccionesSemanticas {
         return matriz[estadoOrigen][simbolo];
     }
 
-    public void set(int estadoOrigen, int simbolo, AccionSemantica as) {
-        matriz[estadoOrigen][simbolo] = as;
+    public void set(int estadoOrigen, int simbolo, AccionSemantica accionSemantica) {
+        matriz[estadoOrigen][simbolo] = accionSemantica;
     }
 }
 

@@ -83,6 +83,10 @@ public class AnalizadorLexico {
         this.idTokens.put("FOR", 487);
         this.idTokens.put("LONGINT", 488);
         this.idTokens.put("FLOAT", 489);
+        this.idTokens.put("UP", 490);
+        this.idTokens.put("DOWN", 491);
+        this.idTokens.put("NI", 492);
+        this.idTokens.put("REF", 493);
 
 
         /***** ACCIONES SEMÁNTICAS *****/

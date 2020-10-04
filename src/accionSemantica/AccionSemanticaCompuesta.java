@@ -1,5 +1,8 @@
 package accionSemantica;
 
+import accionSemantica.accionSemanticaSimple.AccionSemanticaSimple;
+import accionSemantica.accionSemanticaSimple.DescartarBuffer;
+
 import java.util.Vector;
 
 @SuppressWarnings("all")
@@ -26,8 +29,11 @@ public class AccionSemanticaCompuesta implements AccionSemantica {
     @Override
     public boolean ejecutar(String buffer, char caracter) {
         for (AccionSemantica accion : this.accionSemanticas) {
-            if (!accion.ejecutar(buffer, caracter))
+            if (!accion.ejecutar(buffer, caracter)) {
+                DescartarBuffer descarte = new DescartarBuffer(((AccionSemanticaSimple) accion).getAnalizadorLexico());
+                descarte.ejecutar(buffer, caracter);
                 return false;
+            }
         }
         return true;
     }

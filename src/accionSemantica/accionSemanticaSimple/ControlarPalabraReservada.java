@@ -15,7 +15,7 @@ public class ControlarPalabraReservada extends AccionSemanticaSimple {
         else if (this.getAnalizadorLexico().esIdentificador(buffer))
             return true;
         else {
-            String error = "La cadena ingresada no es una palabra reservada";
+            String error = "La cadena ingresada no es una palabra reservada o un identificador válido";
             int linea = this.getAnalizadorLexico().getLinea();
             this.getAnalizadorLexico().addErrorLexico(error, linea);
             return false;

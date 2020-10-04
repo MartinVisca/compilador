@@ -123,21 +123,19 @@ public class AnalizadorLexico {
         AccionSemanticaCompuesta accionSemantica6 = new AccionSemanticaCompuesta();
         Vector<Character> vectorAS6 = new Vector<>();
         vectorAS6.add('l');
-        AccionSemanticaSimple accionSemantica2AS2 = new AgregarCaracter(this, vectorAS6);
-        accionSemantica6.addAccion(accionSemantica2AS2);
+        AccionSemanticaSimple accionSemantica2AS6 = new AgregarCaracter(this, vectorAS6);
+        accionSemantica6.addAccion(accionSemantica2AS6);
         accionSemantica6.addAccion(new ControlarRangoEnteroLargo(this));
         accionSemantica6.addAccion(accionSemantica14);
 
         //AS7 -> Controlar rango de flotante; crea el token en caso de ser correcto. Ultimo caracter al inicio del próximo buffer.
         AccionSemanticaCompuesta accionSemantica7 = new AccionSemanticaCompuesta();
-        accionSemantica7.addAccion(accionSemantica2);
         accionSemantica7.addAccion(new ControlarRangoFlotante(this));
         accionSemantica7.addAccion(accionSemantica14);
         accionSemantica7.addAccion(accionSemantica12);
 
         //AS8 -> Controlar rango de exponente de flotante; crea el token en caso de ser correcto. Ultimo caracter al inicio del próximo buffer.
         AccionSemanticaCompuesta accionSemantica8 = new AccionSemanticaCompuesta();
-        accionSemantica8.addAccion(accionSemantica2);
         accionSemantica8.addAccion(new ControlarRangoExponenteFlotante(this));
         accionSemantica8.addAccion(accionSemantica14);
         accionSemantica8.addAccion(accionSemantica12);
@@ -284,7 +282,7 @@ public class AnalizadorLexico {
             for (int i = 0; i < stringToken.length(); i++) {
                 Character c = stringToken.charAt(i);
 
-                if (!(c.equals('f') || Character.isDigit(c)) || c.equals('.'))
+                if (!(c.equals('f') || Character.isDigit(c) || c.equals('.')))
                     return false;
             }
         }

@@ -15,7 +15,7 @@ public class ConsumidorTokens {
             String stringArchivo = Files.readString(Paths.get(path));
         } catch(IOException e) {}*/
 
-        String entrada = "hola; /n hOla$"; //Aca iria el string correspondiente al archivo
+        String entrada = "int a = 0_l;$"; //Aca iria el string correspondiente al archivo
         AnalizadorLexico analizadorLexico = new AnalizadorLexico(entrada);
         Vector<Token> tokens = analizadorLexico.getTokens();
         for (Token token : tokens) {

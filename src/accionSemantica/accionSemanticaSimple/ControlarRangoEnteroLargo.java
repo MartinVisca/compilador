@@ -5,24 +5,24 @@ import analizadorLexico.AnalizadorLexico;
 @SuppressWarnings("all")
 public class ControlarRangoEnteroLargo extends AccionSemanticaSimple {
 
-    private static final String RANGO_MAXIMO = String.valueOf(Math.pow(2l, 31l));
-    private static final String RANGO_MINIMO = String.valueOf(Math.pow(-2l, 31l));
+    private static final long RANGO_MAXIMO = (long) Math.pow(2, 31);
+    private static final long RANGO_MINIMO = (long) Math.pow(-2, 31);
 
     public ControlarRangoEnteroLargo(AnalizadorLexico analizadorLexico) {
         super(analizadorLexico);
     }
 
-    public static String getRangoMaximo() {
+    public static long getRangoMaximo() {
         return RANGO_MAXIMO;
     }
 
-    public static String getRangoMinimo() {
+    public static long getRangoMinimo() {
         return RANGO_MINIMO;
     }
 
     @Override
     public boolean ejecutar(String buffer, char caracter) {
-        long numero = Long.valueOf(buffer);
+        long numero = Long.valueOf(buffer.substring(0, buffer.length() - 1));
         long maximo = Long.valueOf(this.RANGO_MAXIMO);
         long minimo = Long.valueOf(this.RANGO_MINIMO);
 

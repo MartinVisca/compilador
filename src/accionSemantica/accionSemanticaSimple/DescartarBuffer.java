@@ -10,7 +10,8 @@ public class DescartarBuffer extends AccionSemanticaSimple {
 
     @Override
     public boolean ejecutar(String buffer, char caracter) {
-        this.getAnalizadorLexico().setBuffer("" + caracter);
+        this.getAnalizadorLexico().setBuffer("");
+        this.getAnalizadorLexico().setDescartoBuffer(true);
         return true;
     }
 

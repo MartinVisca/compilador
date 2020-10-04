@@ -10,7 +10,7 @@ public class CrearToken extends AccionSemanticaSimple {
 
     @Override
     public boolean ejecutar(String buffer, char caracter) {
-        this.getAnalizadorLexico().addToken(buffer);
+        this.getAnalizadorLexico().addToken(this.getAnalizadorLexico().getBuffer());
         return true;
     }
 

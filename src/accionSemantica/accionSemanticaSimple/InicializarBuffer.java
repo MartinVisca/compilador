@@ -11,8 +11,8 @@ public class InicializarBuffer extends AccionSemanticaSimple {
 
     @Override
     public boolean ejecutar(String buffer, char caracter) {
-        String auxiliar = "" + caracter;
-        this.getAnalizadorLexico().setBuffer(auxiliar);
+        buffer = "" + caracter;
+        this.getAnalizadorLexico().setBuffer(buffer);
         return true;
     }
 }

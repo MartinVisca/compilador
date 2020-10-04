@@ -10,7 +10,16 @@ public class ControlarPalabraReservada extends AccionSemanticaSimple {
 
     @Override
     public boolean ejecutar(String buffer, char caracter) {
-        return this.getAnalizadorLexico().esPalabraReservada(buffer);
+        if (this.getAnalizadorLexico().esPalabraReservada(buffer))
+            return true;
+        else if (this.getAnalizadorLexico().esIdentificador(buffer))
+            return true;
+        else {
+            String error = "La cadena ingresada no es una palabra reservada";
+            int linea = this.getAnalizadorLexico().getLinea();
+            this.getAnalizadorLexico().addErrorLexico(error, linea);
+            return false;
+        }
     }
 
 }

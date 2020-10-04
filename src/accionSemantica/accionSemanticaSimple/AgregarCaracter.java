@@ -25,25 +25,25 @@ public class AgregarCaracter extends AccionSemanticaSimple {
     @Override
     public boolean ejecutar(String buffer, char caracter) {
         if (this.caracteresPermitidos.isEmpty()) {
-            String auxiliar = buffer + caracter;
-            this.getAnalizadorLexico().setBuffer(auxiliar);
+            buffer = buffer + caracter;
+            this.getAnalizadorLexico().setBuffer(buffer);
             return true;
         } else {
             if (this.caracteresPermitidos.contains('d')) {
                 if (Character.isDigit(caracter)) {
-                    String auxiliar = buffer + caracter;
-                    this.getAnalizadorLexico().setBuffer(auxiliar);
+                    buffer = buffer + caracter;
+                    this.getAnalizadorLexico().setBuffer(buffer);
                     return true;
                 }
             }
             else if ((this.caracteresPermitidos.contains('_') && caracter == '_') || (this.caracteresPermitidos.contains('.') && caracter == '.')) {
-                String auxiliar = buffer + caracter;
-                this.getAnalizadorLexico().setBuffer(auxiliar);
+                buffer = buffer + caracter;
+                this.getAnalizadorLexico().setBuffer(buffer);
                 return true;
             }
             else if (this.caracteresPermitidos.contains('l') && caracter == 'l') {
-                String auxiliar = buffer + caracter;
-                this.getAnalizadorLexico().setBuffer(auxiliar);
+                buffer = buffer + caracter;
+                this.getAnalizadorLexico().setBuffer(buffer);
                 return true;
             }
         }

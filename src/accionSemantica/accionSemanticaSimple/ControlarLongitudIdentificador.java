@@ -21,7 +21,7 @@ public class ControlarLongitudIdentificador extends AccionSemanticaSimple {
         if (buffer.length() <= LONGITUD_TOPE)
             return true;
         else {
-            String error = "Advertencia: el identificador superó la longitud permitida, por lo que fue truncado.";
+            String error = "Warning: el identificador superó la longitud permitida, por lo que fue truncado.";
             int linea = this.getAnalizadorLexico().getLinea();
             this.getAnalizadorLexico().addErrorLexico(error, linea);
             String nuevoBuffer = buffer.substring(this.PRIMER_POSICION, this.LONGITUD_TOPE - 1);

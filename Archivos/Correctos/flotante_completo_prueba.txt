@@ -1,0 +1,1 @@
+FLOAT flotante_con_exponente = 1.0247f22;$

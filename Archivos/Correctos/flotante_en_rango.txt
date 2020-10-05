@@ -1,0 +1,3 @@
+FLOAT flotante_menor_rango_sin_exponente = 0.00214;
+FLOAT flotante_mayor_rango_sin_exponente = 1.62143;
+FLOAT flotante_cero = 0.0;$

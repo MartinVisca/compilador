@@ -1,0 +1,1 @@
+FLOAT flotante_completo_no_valido = 0.1234f45;$

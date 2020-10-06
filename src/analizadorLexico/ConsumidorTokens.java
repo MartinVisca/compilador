@@ -10,7 +10,7 @@ public class ConsumidorTokens {
     public static void main(String[] args) {
         //Logica de carga de archivo
         try {
-            String path = "Archivos/prueba.txt";
+            String path = "Archivos/Erroneos/entero_largo_fuera_rango.txt";
             String entrada = Files.readString(Paths.get(path));
 
             /*String entrada = "if (variable<=otravariable){" +
@@ -25,10 +25,8 @@ public class ConsumidorTokens {
                 System.out.println("Tipo token: " + token.getTipo());
                 System.out.println("Lexema: " + token.getLexema());
                 RegistroSimbolo registroSimbolo = token.getRegistro();
-                if (registroSimbolo != null) {
+                if (registroSimbolo != null)
                     System.out.println("Apunta a lexema: " + registroSimbolo.getLexema());
-                    System.out.println("Total de apariciones: " + registroSimbolo.getTotal());
-                }
             }
 
             System.out.println("----------------");

@@ -1,1 +1,1 @@
-identificadorFallidoPorMayuscula$
+identificadorFallidoPorMayusculaYLongitud$

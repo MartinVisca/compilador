@@ -5,10 +5,10 @@ import analizadorLexico.AnalizadorLexico;
 @SuppressWarnings("all")
 public class ControlarRangoFlotante extends AccionSemanticaSimple {
 
-    private static final float MINIMO_RANGO_NEGATIVO = -3.40282347f+38;
-    private static final float MAXIMO_RANGO_NEGATIVO = -1.17549435f-38;
-    private static final float MINIMO_RANGO_POSITIVO = 1.17549435f-38;
-    private static final float MAXIMO_RANGO_POSITIVO = 3.40282347f+38;
+    private static final float MINIMO_RANGO_NEGATIVO = -3.40282347f;
+    private static final float MAXIMO_RANGO_NEGATIVO = -1.17549435f;
+    private static final float MINIMO_RANGO_POSITIVO = 1.17549435f;
+    private static final float MAXIMO_RANGO_POSITIVO = 3.40282347f;
     private static final float RANGO_CERO = 0.0f;
 
     public ControlarRangoFlotante(AnalizadorLexico analizadorLexico) {
@@ -37,7 +37,7 @@ public class ControlarRangoFlotante extends AccionSemanticaSimple {
 
     @Override
     public boolean ejecutar(String buffer, char caracter) {
-        float numero = Float.valueOf(buffer);
+        float numero = Float.parseFloat(buffer);
 
         if ((numero < this.MAXIMO_RANGO_NEGATIVO && numero > this.MINIMO_RANGO_NEGATIVO) ||
             (numero < this.MAXIMO_RANGO_POSITIVO && numero > this.MINIMO_RANGO_POSITIVO) ||

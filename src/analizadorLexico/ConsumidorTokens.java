@@ -10,7 +10,7 @@ public class ConsumidorTokens {
     public static void main(String[] args) {
         //Logica de carga de archivo
         try {
-            String path = "Archivos/Erroneos/entero_largo_fuera_rango.txt";
+            String path = "Archivos/Erroneos/palabras_reservadas_erroneas.txt";
             String entrada = Files.readString(Paths.get(path));
 
             /*String entrada = "if (variable<=otravariable){" +

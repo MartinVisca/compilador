@@ -1,1 +1,1 @@
-LONGINT entero_fuera_de_rango = 2147483648_l;$
+LONGINT entero_fuera_de_rango = 2147483648_l$

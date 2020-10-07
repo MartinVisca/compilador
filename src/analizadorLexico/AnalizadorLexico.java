@@ -58,6 +58,7 @@ public class AnalizadorLexico {
         this.idTokens.put("}", 453);
         this.idTokens.put(".", 454);
         this.idTokens.put(";", 455);
+        this.idTokens.put(":", 456);
 
         //Comparadores
         this.idTokens.put(">", 460);
@@ -259,7 +260,7 @@ public class AnalizadorLexico {
     public String getTipoToken(int idToken) {
         if (idToken >= 440 && idToken <= 443)
             return this.OPERADOR;
-        else if (idToken >= 450 && idToken <= 455)
+        else if (idToken >= 450 && idToken <= 456)
             return this.SIMBOLO_PUNTUACION;
         else if (idToken >= 460 && idToken <= 465)
             return this.COMPARADOR;
@@ -269,7 +270,7 @@ public class AnalizadorLexico {
             return this.IDENTIFICADOR;
         else if (idToken == 471)
             return this.CONSTANTE;
-        else if (idToken >= 480 && idToken <= 489)
+        else if (idToken >= 480 && idToken <= 493)
             return this.PALABRA_RESERVADA;
 
         return "";

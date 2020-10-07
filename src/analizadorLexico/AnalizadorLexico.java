@@ -22,6 +22,8 @@ public class AnalizadorLexico {
     private int linea;
     private Boolean descartoBuffer;
     private Boolean caracterLeido;
+    private int totalTokens;
+    private int contadorToken;
 
     public static final String IDENTIFICADOR = "ID";
     public static final String CONSTANTE = "CTE";
@@ -46,6 +48,8 @@ public class AnalizadorLexico {
         this.linea = 1;
         this.descartoBuffer = false;
         this.caracterLeido = false;
+        this.totalTokens = 0;
+        this.contadorToken = 0;
 
 
         /***** CARGA DE TOKENS *****/
@@ -245,6 +249,22 @@ public class AnalizadorLexico {
         this.caracterLeido = caracterLeido;
     }
 
+    public int getTotalTokens() {
+        return totalTokens;
+    }
+
+    public void setTotalTokens(int totalTokens) {
+        this.totalTokens = totalTokens;
+    }
+
+    public int getContadorToken() {
+        return contadorToken;
+    }
+
+    public void setContadorToken(int contadorToken) {
+        this.contadorToken = contadorToken;
+    }
+
     public Boolean esPalabraReservada(String posiblePalabra) {
         return this.idTokens.keySet().contains(posiblePalabra);
     }
@@ -264,6 +284,7 @@ public class AnalizadorLexico {
 
         Token token = new Token(idToken, stringToken, linea, tipoToken, simbolo);
         this.tokens.add(token);
+        this.totalTokens++;
     }
 
     public int getIdToken(String stringToken) {
@@ -481,5 +502,11 @@ public class AnalizadorLexico {
         if ((tipoCaracter == this.COMPARADOR || tipoCaracter == this.ASIGNACION) && (tipoCaracterAnterior == this.COMPARADOR || tipoCaracterAnterior == this.ASIGNACION || caracterAnterior == '!'))
             return true;
         return false;
+    }
+
+    public Token getToken() {
+        Token retorno = this.tokens.elementAt(this.contadorToken);
+        this.contadorToken++;
+        return retorno;
     }
 }

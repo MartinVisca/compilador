@@ -1,0 +1,1 @@
+FLOAT flotante_completo = 1.0247f22;$

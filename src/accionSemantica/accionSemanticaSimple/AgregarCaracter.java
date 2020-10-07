@@ -29,8 +29,8 @@ public class AgregarCaracter extends AccionSemanticaSimple {
             this.getAnalizadorLexico().setBuffer(buffer);
             return true;
         } else {
-            if (this.caracteresPermitidos.contains('d')) {
-                if (Character.isDigit(caracter)) {
+            if (this.caracteresPermitidos.contains('d') || caracter == '+' || caracter == '-') {
+                if (Character.isDigit(caracter) || caracter == '+' || caracter == '-') {
                     buffer = buffer + caracter;
                     this.getAnalizadorLexico().setBuffer(buffer);
                     return true;

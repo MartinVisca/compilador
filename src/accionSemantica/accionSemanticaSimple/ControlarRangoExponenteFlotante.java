@@ -22,7 +22,10 @@ public class ControlarRangoExponenteFlotante extends AccionSemanticaSimple {
 
     @Override
     public boolean ejecutar(String buffer, char caracter) {
-        int numero = Integer.valueOf(buffer);
+        int inicio = buffer.length() - 2;
+        int finalCadena = buffer.length();
+        String prueba = buffer.substring(inicio, finalCadena);
+        int numero = Integer.valueOf(buffer.substring(inicio, finalCadena));
 
         if (numero >= this.RANGO_MINIMO && numero <= this.RANGO_MAXIMO)
             return true;

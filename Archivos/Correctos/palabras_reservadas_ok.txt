@@ -1,0 +1,1 @@
+IF (identificador) THEN id_then ELSE id_else END_IF$

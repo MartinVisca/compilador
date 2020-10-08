@@ -481,6 +481,15 @@ public class AnalizadorLexico {
         }
     }
 
+    public void imprimirTablaSimbolos() {
+        if (this.tablaSimbolos.isEmpty())
+            System.out.println("Tabla de símbolos vacía");
+        else {
+            for (RegistroSimbolo simbolo : this.tablaSimbolos)
+                System.out.println("Tipo del simbolo: " + simbolo.getTipoToken() + " - Lexema: " + simbolo.getLexema());
+        }
+    }
+
     private Boolean esComentario(Character caracter, int posicionCaracter) {
         if (posicionCaracter > 0)
             if (caracter == '/' && this.archivo.charAt(posicionCaracter - 1) == '%')

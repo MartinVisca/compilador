@@ -7,14 +7,14 @@ import java.util.Vector;
 @SuppressWarnings("all")
 public class AgregarCaracter extends AccionSemanticaSimple {
 
-    private Vector<Character> caracteresPermitidos;
+    //private Vector<Character> caracteresPermitidos;
 
-    public AgregarCaracter(AnalizadorLexico analizadorLexico, Vector<Character> caracteresPermitidos) {
+    public AgregarCaracter(AnalizadorLexico analizadorLexico/*, Vector<Character> caracteresPermitidos*/) {
         super(analizadorLexico);
-        this.caracteresPermitidos = caracteresPermitidos;
+        //this.caracteresPermitidos = caracteresPermitidos;
     }
 
-    public Vector<Character> getCaracteresPermitidos() {
+    /*public Vector<Character> getCaracteresPermitidos() {
         return caracteresPermitidos;
     }
 
@@ -22,9 +22,14 @@ public class AgregarCaracter extends AccionSemanticaSimple {
         this.caracteresPermitidos = caracteresPermitidos;
     }
 
+     */
+
     @Override
     public boolean ejecutar(String buffer, char caracter) {
-        if (this.caracteresPermitidos.isEmpty()) {
+        buffer = buffer + caracter;
+        this.getAnalizadorLexico().setBuffer(buffer);
+        return true;
+        /*if (this.caracteresPermitidos.isEmpty()) {
             buffer = buffer + caracter;
             this.getAnalizadorLexico().setBuffer(buffer);
             return true;
@@ -48,6 +53,8 @@ public class AgregarCaracter extends AccionSemanticaSimple {
             }
         }
         return false;
+
+         */
     }
 
 }

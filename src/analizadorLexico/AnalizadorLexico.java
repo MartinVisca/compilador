@@ -386,10 +386,6 @@ public class AnalizadorLexico {
             if (accion != null && !this.caracterLeido)
                 accion.ejecutar(this.getBuffer(), simbolo);
 
-            if (this.getBuffer().contains("/%"))
-                if (simboloAnterior == '%' && simbolo != '/')
-                    this.addErrorLexico("Comentario mal definido", this.getLinea());
-
             if (nuevoEstado == ULTIMO_ESTADO)
                 estado = 0;
             else if (nuevoEstado != -1)
@@ -407,8 +403,11 @@ public class AnalizadorLexico {
             if (this.archivo.charAt(this.archivo.length() - 2) != '$')
                 this.addErrorLexico("Fin de archivo incorrectamente definido", this.getLinea());
 
-            if (this.archivo.charAt(i) == '$')
+            if (this.archivo.charAt(i) == '$') {
+                if (this.getBuffer().contains("/%") && !this.esComentario(simbolo, i))
+                    this.addErrorLexico("Comentario mal definido", this.getLinea());
                 flagCorte = true;
+            }
 
             if (!this.getDescartoBuffer()
                     || (simbolo == 'l' && simboloAnterior == '_')

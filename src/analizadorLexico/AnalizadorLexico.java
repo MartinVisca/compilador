@@ -394,9 +394,9 @@ public class AnalizadorLexico {
                 if (i > 0) {
                     if (this.archivo.charAt(i) == '\n' || (this.archivo.charAt(i - 1) == '\\' && this.archivo.charAt(i) == 'n'))
                         this.linea++;
+                    else
+                        this.addErrorLexico("Caracter no válido", this.getLinea());
                 }
-                else
-                    this.addErrorLexico("Caracter no válido", this.getLinea());
                 estado = 0;
             }
 

@@ -25,7 +25,21 @@ public class ControlarRangoExponenteFlotante extends AccionSemanticaSimple {
         int inicio = buffer.length() - 2;
         int finalCadena = buffer.length();
         String prueba = buffer.substring(inicio, finalCadena);
-        int numero = Integer.valueOf(buffer.substring(inicio, finalCadena));
+        int numero = 0;
+
+        try {
+            numero = Integer.valueOf(prueba);
+        } catch (Exception e) {
+            if (Character.isDigit(buffer.charAt(finalCadena - 1))) {
+                prueba = buffer.substring(inicio + 1, finalCadena);
+                numero = Integer.valueOf(prueba);
+            } else {
+                String error = "El flotante está mal definido";
+                int linea = this.getAnalizadorLexico().getLinea();
+                this.getAnalizadorLexico().addErrorLexico(error, linea);
+                return false;
+            }
+        }
 
         if (numero >= this.RANGO_MINIMO && numero <= this.RANGO_MAXIMO)
             return true;

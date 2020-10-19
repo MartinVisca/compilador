@@ -37,15 +37,26 @@ public class ControlarRangoFlotante extends AccionSemanticaSimple {
 
     @Override
     public boolean ejecutar(String buffer, char caracter) {
-        float numero = Float.parseFloat(buffer);
+        float numero = 0.0f;
+        String error = "";
+        int linea = 0;
+
+        if (buffer.charAt(buffer.length() - 1) != '.')
+            numero = Float.parseFloat(buffer);
+        else {
+            error = "El flotante está mal definido.";
+            linea = this.getAnalizadorLexico().getLinea();
+            this.getAnalizadorLexico().addErrorLexico(error, linea);
+            return false;
+        }
 
         if ((numero < this.MAXIMO_RANGO_NEGATIVO && numero > this.MINIMO_RANGO_NEGATIVO) ||
             (numero < this.MAXIMO_RANGO_POSITIVO && numero > this.MINIMO_RANGO_POSITIVO) ||
             (numero == this.RANGO_CERO))
             return true;
         else {
-            String error = "El flotante indicado no está dentro del rango permitido.";
-            int linea = this.getAnalizadorLexico().getLinea();
+            error = "El flotante indicado no está dentro del rango permitido.";
+            linea = this.getAnalizadorLexico().getLinea();
             this.getAnalizadorLexico().addErrorLexico(error, linea);
             return false;
         }

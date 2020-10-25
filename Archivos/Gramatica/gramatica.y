@@ -25,18 +25,17 @@ import compilador.Token
 programa : bloque
          ;
 
-bloque  : bloque_comun
-        | declaracion_proc
-        | bloque bloque_comun
-        | bloque declaracion_proc
-        ;
 
-bloque_comun : bloque_control
-             | declaracion
-             ;
+bloque : bloque_comun
+	   | bloque bloque_comun
+	   ;
 
-bloque_control : sentencias
-               | '{' bloque_sentencias '}'
+bloque_comun : declaracion_proc
+		   | declaracion
+		   | bloque_control
+		   ;
+
+bloque_control : '{' bloque_sentencias '}'
                ;
 
 bloque_sentencias : sentencias
@@ -46,28 +45,24 @@ bloque_sentencias : sentencias
 declaracion : tipo lista_variables';'
             ;
 
-declaracion_variable_proc : tipo lista_variables
-                          | REF tipo lista_variables
-                          ;
 
-lista_variables_proc : declaracion_variable_proc
-                     | lista_variables_proc ',' declaracion_variable_proc
-                     ;
 
 lista_variables : ID
                 | lista_variables ',' ID
                 ;
 
-declaracion_proc : encabezado_proc bloque_proc
+declaracion_proc : encabezado_proc bloque_comun
                  ;
 
-encabezado_proc : PROC ID '(' lista_variables_proc ')' NI '=' CTE
+encabezado_proc : PROC ID '(' lista_parametros ')' NI '=' CTE
                 | PROC ID '(' ')' NI '=' CTE
                 ;
 
-bloque_proc : bloque_control
-            | bloque_proc bloque_control
-            ;
+lista_parametros : tipo ID
+ | REF tipo ID
+ | lista_parametros ',' tipo ID
+ | lista_parametros ',' REF tipo ID
+ ;
 
 sentencias : sentencia_unica_control
            | sentencia_unica_ejecutable
@@ -88,11 +83,8 @@ sentencia_if : IF '(' condicion ')' cuerpo_if
 cuerpo_if : bloque_control END_IF';'
           | bloque_control ELSE bloque_control END_IF';'
 
-sentencia_for : FOR '(' ID '=' CTE ';' condicion ';' incr_decr ')' cuerpo_for
+sentencia_for : FOR '(' ID '=' CTE ';' condicion ';' incr_decr ')' bloque_control
               ;
-
-cuerpo_for : bloque_control
-           ;
 
 condicion : condicion comparador expresion
           | expresion comparador expresion
@@ -112,7 +104,7 @@ parametros : ID ':' ID
 salida : OUT '(' CADENA ')'';'
        ;
 
-expresion : expresion '+' termino 
+expresion : expresion '+' termino
           | expresion '-' termino
           | termino
           ;
@@ -123,7 +115,8 @@ termino : termino '*' factor
         ;
 
 factor : ID
-       | CTE
+       | CTE {if .getTipo.equals(“LONGINT”) < 32768  }
+ |'-'CTE {if .getTipo.equals(“LONGINT”)  }
        ;
 
 tipo : LONGINT
@@ -144,4 +137,22 @@ incr_decr : UP
           ;
 
 %%
+
+private AnalizadorLexico analizadorLexico;
+
+private int yylex() {
+	Token token=analizadorLexico.getToken();
+
+	if (token!=null){
+	    yylval = new ParserVal(token);
+	    return token.getId();
+	}
+
+	return 0;
+}
+
+private void yyerror(String string) {
+	System.out.println(string);
+}
+
 

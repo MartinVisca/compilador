@@ -1,0 +1,11 @@
+LONGINT a = 1_l;
+LONGINT b = 2_l;
+LONGINT resultado = 0_l;
+IF (a < b) {
+	resultado = a;
+} 
+ELSE {
+	resultado = b;
+}
+END_IF;$
+

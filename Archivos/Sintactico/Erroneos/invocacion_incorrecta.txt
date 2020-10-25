@@ -1,0 +1,3 @@
+LONGINT c = 1_l;
+LONGINT d = 2_l;
+f1(c, d);$

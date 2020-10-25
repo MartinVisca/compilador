@@ -1,0 +1,5 @@
+LONGINT suma = 0_l;
+LONGINT i = 0_l;
+FOR (i = 1_l; DOWN j) {
+	suma = suma + i;
+}$

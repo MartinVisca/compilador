@@ -1,0 +1,9 @@
+LONGINT resultado = 0_l;
+IF (1_l < 2_l {
+	LONGINT resultado = 1_l; 
+}
+ELSE {
+	resultado = 2_l;
+}
+END_IF;$
+

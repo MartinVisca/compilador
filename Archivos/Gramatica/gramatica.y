@@ -79,11 +79,11 @@ sentencia_unica_ejecutable : asignacion
                            | llamado_proc
                            ;
 
-sentencia_if : IF '(' condicion ')' cuerpo_if  {System.out.println('');}
+sentencia_if : IF '(' condicion ')' cuerpo_if  {System.out.println('sentencia if');}
              ;
 
-cuerpo_if : bloque_control END_IF';' {System.out.println('');}
-          | bloque_control ELSE bloque_control END_IF';' {System.out.println('');}
+cuerpo_if : bloque_control END_IF';' {System.out.println('cuerpo if');}
+          | bloque_control ELSE bloque_control END_IF';' {System.out.println('cuerpo if else');}
 
 sentencia_for : FOR '(' ID '=' CTE ';' condicion ';' incr_decr ')' bloque_control
               ;

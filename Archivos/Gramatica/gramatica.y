@@ -35,14 +35,16 @@ bloque_comun : declaracion_proc
 		   | bloque_control
 		   ;
 
-bloque_control : '{' bloque_sentencias '}'
+bloque_control : '{' bloque_sentencias '}' {System.out.println('Bloque de sentencias');}
+               |  bloque_sentencias '}'  {System.out.println('Error Bloque de sentencias : falta '{');}
+               | '{' bloque_sentencias {System.out.println('Error Bloque de sentencias : falta '}');}
                ;
 
 bloque_sentencias : sentencias
                   | bloque_sentencias sentencias
                   ;
 
-declaracion : tipo lista_variables';'
+declaracion : tipo lista_variables';' {System.out.println('Declaracion de variables');}
             ;
 
 
@@ -77,11 +79,11 @@ sentencia_unica_ejecutable : asignacion
                            | llamado_proc
                            ;
 
-sentencia_if : IF '(' condicion ')' cuerpo_if
+sentencia_if : IF '(' condicion ')' cuerpo_if  {System.out.println('');}
              ;
 
-cuerpo_if : bloque_control END_IF';'
-          | bloque_control ELSE bloque_control END_IF';'
+cuerpo_if : bloque_control END_IF';' {System.out.println('');}
+          | bloque_control ELSE bloque_control END_IF';' {System.out.println('');}
 
 sentencia_for : FOR '(' ID '=' CTE ';' condicion ';' incr_decr ')' bloque_control
               ;
@@ -90,18 +92,18 @@ condicion : condicion comparador expresion
           | expresion comparador expresion
           ;
 
-asignacion : ID '=' expresion ';'
+asignacion : ID '=' expresion ';' {System.out.println('');}
            ;
 
-llamado_proc : ID '(' ')'';'
-             | ID '(' parametros ')'';'
+llamado_proc : ID '(' ')'';' {System.out.println('llamada a procedimiento vacio');}
+             | ID '(' parametros ')'';' {System.out.println('llamada a procedimiento con parametros');}
              ;
 
 parametros : ID ':' ID
            | parametros ',' ID ':' ID
            ;
 
-salida : OUT '(' CADENA ')'';'
+salida : OUT '(' CADENA ')'';' {System.out.println('Salida');}
        ;
 
 expresion : expresion '+' termino

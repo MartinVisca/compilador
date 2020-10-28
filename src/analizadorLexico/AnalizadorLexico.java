@@ -33,7 +33,7 @@ public class AnalizadorLexico {
     public static final String ASIGNACION = "ASIGNACION";
     public static final String PALABRA_RESERVADA = "PALABRA RESERVADA";
     public static final String CADENA = "CADENA DE CARACTERES";
-    public static final int ID_CADENA = 47;
+    public static final int ID_CADENA = 274;
     public static final int PRIMER_ESTADO = 0;
     public static final int ULTIMO_ESTADO = 12;
 
@@ -54,50 +54,52 @@ public class AnalizadorLexico {
 
         /***** CARGA DE TOKENS *****/
         //Operadores aritméticos
-        this.idTokens.put("+", 440);
-        this.idTokens.put("-", 441);
-        this.idTokens.put("*", 442);
-        this.idTokens.put("/", 443);
+        this.idTokens.put("+", (int) '+');
+        this.idTokens.put("-", (int) '-');
+        this.idTokens.put("*", (int) '*');
+        this.idTokens.put("/", (int) '/');
 
         //Símbolos de puntuación
-        this.idTokens.put("(", 450);
-        this.idTokens.put(")", 451);
-        this.idTokens.put("{", 452);
-        this.idTokens.put("}", 453);
-        this.idTokens.put(".", 454);
-        this.idTokens.put(";", 455);
-        this.idTokens.put(":", 456);
+        this.idTokens.put("(", (int) '(');
+        this.idTokens.put(")", (int) ')');
+        this.idTokens.put("{", (int) '{');
+        this.idTokens.put("}", (int) '}');
+        this.idTokens.put(".", (int) '.');
+        this.idTokens.put(",", (int) ',');
+        this.idTokens.put(";", (int) ';');
+        this.idTokens.put(":", (int) ':');
 
         //Comparadores
-        this.idTokens.put(">", 460);
-        this.idTokens.put("<", 461);
-        this.idTokens.put("==", 462);
-        this.idTokens.put("!=", 463);
-        this.idTokens.put(">=", 464);
-        this.idTokens.put("<=", 465);
+        this.idTokens.put(">", (int) '>');
+        this.idTokens.put("<", (int) '<');
+        this.idTokens.put("==", 277);
+        this.idTokens.put("!=", 278);
+        this.idTokens.put(">=", 276);
+        this.idTokens.put("<=", 275);
 
         //Asignación
-        this.idTokens.put("=", 466);
+        this.idTokens.put("=", (int) '=');
 
         //Identificador y constante
-        this.idTokens.put("ID", 470);
-        this.idTokens.put("CTE", 471);
+        this.idTokens.put("ID", 257);
+        this.idTokens.put("CTE", 258);
 
         //Palabras reservadas
-        this.idTokens.put("IF", 480);
-        this.idTokens.put("ELSE", 481);
-        this.idTokens.put("THEN", 482);
-        this.idTokens.put("END_IF", 483);
-        this.idTokens.put("OUT", 484);
-        this.idTokens.put("FUNC", 485);
-        this.idTokens.put("RETURN", 486);
-        this.idTokens.put("FOR", 487);
-        this.idTokens.put("LONGINT", 488);
-        this.idTokens.put("FLOAT", 489);
-        this.idTokens.put("UP", 490);
-        this.idTokens.put("DOWN", 491);
-        this.idTokens.put("NI", 492);
-        this.idTokens.put("REF", 493);
+        this.idTokens.put("IF", 259);
+        this.idTokens.put("ELSE", 260);
+        this.idTokens.put("THEN", 261);
+        this.idTokens.put("END_IF", 262);
+        this.idTokens.put("OUT", 263);
+        this.idTokens.put("FUNC", 264);
+        this.idTokens.put("RETURN", 265);
+        this.idTokens.put("FOR", 266);
+        this.idTokens.put("LONGINT", 267);
+        this.idTokens.put("FLOAT", 268);
+        this.idTokens.put("UP", 269);
+        this.idTokens.put("DOWN", 270);
+        this.idTokens.put("NI", 271);
+        this.idTokens.put("REF", 272);
+        this.idTokens.put("PROC", 273);
 
 
         /***** ACCIONES SEMÁNTICAS *****/
@@ -285,19 +287,19 @@ public class AnalizadorLexico {
     }
 
     public String getTipoToken(int idToken) {
-        if (idToken >= 440 && idToken <= 443)
+        if (idToken == (int) '+' || idToken == (int) '-' || idToken == (int) '*' || idToken == (int) '/')
             return this.OPERADOR;
-        else if (idToken >= 450 && idToken <= 456)
+        else if (idToken == (int) ')' || idToken == (int) '(' || idToken == (int) '}' || idToken == (int) '{' || idToken == (int) ',' || idToken == (int) ';' || idToken == (int) ':' || idToken == (int) '.')
             return this.SIMBOLO_PUNTUACION;
-        else if (idToken >= 460 && idToken <= 465)
+        else if (idToken == (int) '<' || idToken == (int) '>' || (idToken >= 275 && idToken <= 278))
             return this.COMPARADOR;
-        else if (idToken == 466)
+        else if (idToken == (int) '=')
             return this.ASIGNACION;
-        else if (idToken == 470)
+        else if (idToken == 257)
             return this.IDENTIFICADOR;
-        else if (idToken == 471)
+        else if (idToken == 258)
             return this.CONSTANTE;
-        else if (idToken >= 480 && idToken <= 493)
+        else if (idToken >= 259 && idToken <= 273)
             return this.PALABRA_RESERVADA;
         else if (idToken == this.ID_CADENA)
             return CADENA;

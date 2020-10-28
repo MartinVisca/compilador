@@ -10,7 +10,7 @@ import analizadorLexico.Token;
 %}
 
 
-%token ID CTE IF ELSE THEN END_IF OUT FUNC RETURN FOR LONGINT FLOAT UP DOWN NI REF PROC CADENA
+%token ID CTE IF ELSE THEN END_IF OUT FUNC RETURN FOR LONGINT FLOAT UP DOWN NI REF PROC CADENA MENORIGUAL MAYORIGUAL IGUAL DISTINTO
 %start programa
 
 %%
@@ -18,11 +18,13 @@ import analizadorLexico.Token;
 programa : bloque
          ;
 
-bloque : sentencias_declarativas
-       | sentencias_ejecutables
-       | bloque sentencias_declarativas
-       | bloque sentencias_ejecutables
+bloque : sentencias
+       | bloque sentencias
        ;
+
+sentencias : sentencias_declarativas
+           | sentencias_ejecutables
+           ;
 
 sentencias_declarativas : declaracion_metodo
                         | declaracion_variable
@@ -68,14 +70,14 @@ sentencias_ejecutables : sentencia_if
                        | invocacion_proc
                        ;
 
-sentencia_if : IF '(' condicion ')' sentencias_ejecutables END_IF';'
-             | IF '(' condicion ')' '{' bloque_sentencias_ejecutables '}' END_IF';'
+sentencia_if : IF '(' condicion ')' sentencias END_IF';'
+             | IF '(' condicion ')' '{' bloque '}' END_IF';'
              ;
 
-sentencia_if_else : IF '(' condicion ')' sentencias_ejecutables ELSE sentencias_ejecutables END_IF';'
-                  | IF '(' condicion ')' sentencias_ejecutables ELSE '{' bloque_sentencias_ejecutables '}' END_IF';'
-                  | IF '(' condicion ')' '{' bloque_sentencias_ejecutables '}' ELSE sentencias_ejecutables END_IF';'
-                  | IF '(' condicion ')' '{' bloque_sentencias_ejecutables '}' ELSE '{' bloque_sentencias_ejecutables'}' END_IF';'
+sentencia_if_else : IF '(' condicion ')' sentencias ELSE sentencias END_IF';'
+                  | IF '(' condicion ')' sentencias ELSE '{' bloque '}' END_IF';'
+                  | IF '(' condicion ')' '{' bloque '}' ELSE sentencias END_IF';'
+                  | IF '(' condicion ')' '{' bloque '}' ELSE '{' bloque'}' END_IF';'
                   ;
 
 sentencia_for : FOR '(' ID '=' CTE ';' condicion ';' incr_decr ')' sentencias_ejecutables';'
@@ -116,10 +118,10 @@ factor : ID
 
 comparador : '<'
            | '>'
-           | '<='
-           | '>='
-           | '=='
-           | '!='
+           | MENORIGUAL
+           | MAYORIGUAL
+           | IGUAL
+           | DISTINTO
            ;
 
 incr_decr : UP
@@ -133,9 +135,23 @@ tipo : LONGINT
 %%
 
 private AnalizadorLexico analizadorLexico;
+private Token token;
 
+public
 
 private int yylex() {
+
+    this.token = analizadorLexico.getToken();
+
+    yylval = new ParserVal(token.getLexema());
+
+    if (token.getTipo().equals("ID") || token.getTipo().equals("CTE") || token.getTipo().equals("CADENA DE CARACTERES")
+        return ;
+    else
+        if (token.getTipo().equals("OPERADOR ARITMETICO") || token.getTipo().equals("SIMBOLO DE PUNTUACION") || token.getTipo().equals("COMPARADOR") || token.getTipo().equals("ASIGNACION") || token.getTipo().equals("PALABRA RESERVADA"))
+            return ;
+    return ;
+
 }
 
 private void yyerror(String string) {

@@ -429,8 +429,9 @@ public class AnalizadorLexico {
             return -1;
         if (caracter == 'l' && caracterAnterior == '_')
             return 4;
-        if (caracter == 'f' && Character.isDigit(caracterAnterior))
-            return 5;
+        if (caracterAnterior != null)
+            if (caracter == 'f' && Character.isDigit(caracterAnterior))
+                return 5;
         if (caracter == 'n' && caracterAnterior == '\\')
             return 16;
         if (Character.isLetter(caracter))

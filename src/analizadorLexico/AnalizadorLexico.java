@@ -503,8 +503,11 @@ public class AnalizadorLexico {
     }
 
     public Token getToken() {
-        Token retorno = this.tokens.elementAt(this.contadorToken);
-        this.contadorToken++;
-        return retorno;
+        if (contadorToken < tokens.size()) {
+            Token retorno = this.tokens.elementAt(this.contadorToken);
+            this.contadorToken++;
+            return retorno;
+        }
+        return null;
     }
 }

@@ -51,7 +51,7 @@ lista_parametros_formales : tipo ID
                           | lista_parametros_formales ',' REF tipo ID
                           ;
 
-declaracion_variable : tipo lista_variables';'
+declaracion_variable : tipo lista_variables';' {System.out.println("Declare una variable");}
                      ;
 
 lista_variables : ID
@@ -137,21 +137,17 @@ tipo : LONGINT
 private AnalizadorLexico analizadorLexico;
 private Token token;
 
-public
+public Parser(AnalizadorLexico lexico) {
+    this.analizadorLexico = lexico;
+}
 
 private int yylex() {
-
-    this.token = analizadorLexico.getToken();
-
-    yylval = new ParserVal(token.getLexema());
-
-    if (token.getTipo().equals("ID") || token.getTipo().equals("CTE") || token.getTipo().equals("CADENA DE CARACTERES")
-        return ;
-    else
-        if (token.getTipo().equals("OPERADOR ARITMETICO") || token.getTipo().equals("SIMBOLO DE PUNTUACION") || token.getTipo().equals("COMPARADOR") || token.getTipo().equals("ASIGNACION") || token.getTipo().equals("PALABRA RESERVADA"))
-            return ;
-    return ;
-
+    this.token = this.analizadorLexico.getToken();
+    if (this.token != null) {
+        yylval = new ParserVal(this.token.getLexema());
+        return this.token.getId();
+    }
+    return 0;
 }
 
 private void yyerror(String string) {

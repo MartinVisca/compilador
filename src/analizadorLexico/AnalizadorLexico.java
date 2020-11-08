@@ -260,6 +260,11 @@ public class AnalizadorLexico {
         int linea = this.getLinea();
 
         if (tipoToken.equals(this.IDENTIFICADOR) || tipoToken.equals(this.CONSTANTE)) {
+            if (this.esConstante(stringToken) && stringToken.contains("_l"))
+                simbolo.setTipoIdCte("LONGINT");
+            else
+                simbolo.setTipoIdCte("FLOAT");
+
             if (!this.contieneSimbolo(stringToken))
                 this.tablaSimbolos.add(simbolo);
             else

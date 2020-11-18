@@ -7,4 +7,3 @@ IF (1_l < 2_l)
 	}
 	resultado = suma;
 END_IF;$
-

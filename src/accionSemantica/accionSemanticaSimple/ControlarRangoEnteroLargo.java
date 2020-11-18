@@ -5,35 +5,33 @@ import analizadorLexico.AnalizadorLexico;
 @SuppressWarnings("all")
 public class ControlarRangoEnteroLargo extends AccionSemanticaSimple {
 
-    private static final long RANGO_MAXIMO = (long) Math.pow(2, 31);
-    private static final long RANGO_MINIMO = (long) Math.pow(-2, 31);
+    public static final long MAXIMO_LONG = 2147483648L;
 
     public ControlarRangoEnteroLargo(AnalizadorLexico analizadorLexico) {
         super(analizadorLexico);
     }
 
-    public static long getRangoMaximo() {
-        return RANGO_MAXIMO;
-    }
-
-    public static long getRangoMinimo() {
-        return RANGO_MINIMO;
+    // Verifica si el entero largo está en rango
+    public static boolean enRango(String buffer) {
+        Long numero = Long.parseLong(buffer);
+        return (numero >= 0 && numero <= MAXIMO_LONG);
     }
 
     @Override
     public boolean ejecutar(String buffer, char caracter) {
-        long numero = Long.valueOf(buffer.substring(0, buffer.length() - 1));
-        long maximo = Long.valueOf(this.RANGO_MAXIMO);
-        long minimo = Long.valueOf(this.RANGO_MINIMO);
 
-        //Chequeo por rango -2^31 < x < 2^31 - 1.
-        if (numero < maximo && numero >= minimo)
-            return true;
-        else {
-            String error = "El entero largo indicado no está dentro del rango permitido.";
-            int linea = this.getAnalizadorLexico().getLinea();
-            this.getAnalizadorLexico().addErrorLexico(error, linea);
+        // Si no está en rango
+        if (!enRango(buffer)) {
+            this.getAnalizadorLexico().addErrorLexico("ERROR LEXICO (Linea " + AnalizadorLexico.linea + "): la constante LONGINT está fuera de rango.");
+            this.getAnalizadorLexico().setPosArchivo(this.getAnalizadorLexico().getPosArchivo() + 1);
             return false;
         }
+        else {
+            this.getAnalizadorLexico().agregarTokenATablaSimbolos(buffer, "LONGINT");
+            this.getAnalizadorLexico().setTokenActual(this.getAnalizadorLexico().getIdToken("CTE"));
+            this.getAnalizadorLexico().setPosArchivo(this.getAnalizadorLexico().getPosArchivo() + 1);
+            return true;
+        }
+
     }
 }

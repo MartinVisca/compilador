@@ -1,31 +1,19 @@
 package analizadorSintactico;
 
 import analizadorLexico.AnalizadorLexico;
-import analizadorLexico.RegistroSimbolo;
-import analizadorLexico.Token;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Scanner;
 import java.util.Vector;
 
 public class AnalizadorSintactico {
-    public static void main(String[] args) {
-        //Logica de carga de archivo
-        try {
-            System.out.println("----------ANALIZADOR LÉXICO-----------");
-            System.out.println("Ingrese la ruta del archivo a analizar:");
-            Scanner scanner = new Scanner(System.in);
-            String path = scanner.next();
-            String entrada = Files.readString(Paths.get(path));
 
-            AnalizadorLexico analizadorLexico = new AnalizadorLexico(entrada);
-            Parser parser = new Parser(analizadorLexico);
-            int resultado = parser.yyparse();
-            System.out.println(resultado);
+    private AnalizadorLexico lexico;
+    //private Parser parser;
+    Vector<String> analisisSintactico;
 
-        } catch(IOException e) {}
-
+    private AnalizadorSintactico(AnalizadorLexico lexico) { // TODO: 17/11/2020 agregar Parser al constructor
+        this.lexico = lexico;
+        // this.parser = parser;
     }
+
+    public void agregarAnalisis(String analisis) { this.analisisSintactico.add(analisis); }
+
 }

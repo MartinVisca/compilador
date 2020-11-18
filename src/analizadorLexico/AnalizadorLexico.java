@@ -6,53 +6,41 @@ import accionSemantica.accionSemanticaSimple.*;
 import analizadorLexico.matrices.MatrizAccionesSemanticas;
 import analizadorLexico.matrices.MatrizTransicionEstados;
 
-import java.util.Hashtable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Vector;
 
 public class AnalizadorLexico {
 
-    private String buffer;
-    private String archivo;
-    private Hashtable<String, Integer> idTokens;
-    private Vector<RegistroSimbolo> tablaSimbolos;
-    private Vector<Token> tokens;
-    private MatrizAccionesSemanticas matrizAccionesSemanticas;
-    private MatrizTransicionEstados matrizEstados;
-    private Hashtable<String, Integer> erroresLexicos;
-    private int linea;
-    private Boolean descartoBuffer;
-    private Boolean caracterLeido;
-    private int totalTokens;
-    private int contadorToken;
+    // Variables
+    private String archivo;     // Código del archivo
+    private String buffer = "";      // Buffer para leer el token actual
+    private int posArchivo = 0;      // Índice que indica la posición del archivo que se está leyendo
+    private int estadoActual = 0;       // Estado del autómata en el que me encuentro actualmente
+    private int tokenActual = -1;        // ID Token que se está procesando actualmente
+    private int refTablaSimbolos = -1;      // Número que indica el índice del token en la tabla de símbolos. Sirve para asignarselo al yylval en el Parser
+    public static int linea = 1;    // Referencia a la línea de código. Comienza en 1
 
-    public static final String IDENTIFICADOR = "ID";
-    public static final String CONSTANTE = "CTE";
-    public static final String OPERADOR = "OPERADOR ARITMETICO";
-    public static final String SIMBOLO_PUNTUACION = "SIMBOLO DE PUNTUACION";
-    public static final String COMPARADOR = "COMPARADOR";
-    public static final String ASIGNACION = "ASIGNACION";
-    public static final String PALABRA_RESERVADA = "PALABRA RESERVADA";
-    public static final String CADENA = "CADENA DE CARACTERES";
-    public static final int ID_CADENA = 274;
-    public static final int PRIMER_ESTADO = 0;
-    public static final int ULTIMO_ESTADO = 12;
+    // Estructuras
+    private Vector<RegistroSimbolo> tablaSimbolos;      // Tabla de símbolos. Luego se pasará al Sintáctico
+    private Vector<Token> listaTokens;      // Tokens resultantes del análisis léxico
+    private ArrayList<String> listaErrores;     // Lista de errores léxicos. Luego se pasará al Sintáctico para agregar los errores que detecte
+    private MatrizTransicionEstados matrizEstados;      // Matriz de transición de estados
+    private MatrizAccionesSemanticas matrizAccionesSemanticas;      // Matriz de acciones semánticas
+    private HashMap<String, Integer> idTokens;     // Contiene los id de los tokens definidos. Estructura <Token, [ID, Tipo]
+
+    /*** CONSTRUCTOR ***/
 
     public AnalizadorLexico(String archivo) {
         this.archivo = archivo;
-        this.buffer = "";
-        this.idTokens = new Hashtable<>();
         this.tablaSimbolos = new Vector<>();
-        this.tokens = new Vector<>();
-        this.matrizAccionesSemanticas = new MatrizAccionesSemanticas(12,27);
-        this.erroresLexicos = new Hashtable<>();
-        this.linea = 1;
-        this.descartoBuffer = false;
-        this.caracterLeido = false;
-        this.totalTokens = 0;
-        this.contadorToken = 0;
+        this.listaTokens = new Vector<>();
+        this.listaErrores = new ArrayList<>();
+        this.matrizEstados = new MatrizTransicionEstados();
+        this.matrizAccionesSemanticas = new MatrizAccionesSemanticas(15, 27);
+        this.idTokens = new HashMap<>();
 
-
-        /***** CARGA DE TOKENS *****/
+        /** CARGA DE TOKENS **/
         //Operadores aritméticos
         this.idTokens.put("+", (int) '+');
         this.idTokens.put("-", (int) '-');
@@ -101,96 +89,88 @@ public class AnalizadorLexico {
         this.idTokens.put("REF", 272);
         this.idTokens.put("PROC", 273);
 
+        // Cadena de caracteres
+        this.idTokens.put("CADENA", 274);
 
-        /***** ACCIONES SEMÁNTICAS *****/
-        AccionSemanticaSimple accionSemantica2 = new AgregarCaracter(this); //AS2 -> Agregar caracter (sin restricciones).
-        AccionSemanticaSimple accionSemantica4 = new ControlarPalabraReservada(this); //AS4 -> Controlar si el buffer es palabra reservada.
-        AccionSemanticaSimple accionSemantica12 = new DescartarBuffer(this); //AS12 -> Descartar el buffer y poner el último caracter al inicio del próximo.
-        AccionSemanticaSimple accionSemantica13 = new InicializarBuffer(this); //AS13 -> Inicializar buffer.
-        AccionSemanticaSimple accionSemantica14 = new CrearToken(this); //AS14 -> Crear token.
+        /** ACCIONES SEMÁNTICAS **/
+        // AS1 -> Inicializar buffer y agregar caracter al buffer
+        AccionSemanticaSimple AS1 = new InicializarBuffer(this);
 
-        //AS1 -> Inicializar buffer y agregar caracter a la cadena que contiene (para controlar dígitos).
-        AccionSemanticaCompuesta accionSemantica1Digitos = new AccionSemanticaCompuesta();
-        accionSemantica1Digitos.addAccion(accionSemantica13);
-        accionSemantica1Digitos.addAccion(accionSemantica2);
+        // AS2 -> Agregar caracter al buffer
+        AccionSemanticaSimple AS2 = new AgregarCaracter(this);
 
-        //AS1 -> Inicializar buffer y agregar carácter a la cadena que contiene (resto de caracteres).
-        AccionSemanticaCompuesta accionSemantica1 = new AccionSemanticaCompuesta();
-        accionSemantica1.addAccion(accionSemantica13);
+        // AS3 -> Agregar caracter al buffer (caracter literal - '/')
+        AccionSemanticaSimple AS3 = new DevolverLiteral(this);
 
-        //AS3 -> Inicializar buffer, agregar caracter y crear token.
-        AccionSemanticaCompuesta accionSemantica3 = new AccionSemanticaCompuesta();
-        accionSemantica3.addAccion(accionSemantica13);
-        accionSemantica3.addAccion(accionSemantica14);
+        // AS4 -> Controlar si es palabra reservada
+        AccionSemanticaSimple AS4 = new ControlarPalabraReservada(this);
 
-        //AS5 -> Controlar si el token es palabra reservada y crearlo.
-        AccionSemanticaCompuesta accionSemantica5 = new AccionSemanticaCompuesta();
-        accionSemantica5.addAccion(accionSemantica4);
-        accionSemantica5.addAccion(new ControlarLongitudIdentificador(this));
-        accionSemantica5.addAccion(accionSemantica14);
-        accionSemantica5.addAccion(accionSemantica12);
+        // AS5 -> Controlar si es identificador. Si es identificador y se excede la longitud máxima, se trunca
+        AccionSemanticaSimple AS5 = new ControlarIdentificador(this);
 
-        //AS6 -> Controlar el rango de un entero largo; crea el token en caso de ser correcto. Ultimo caracter al inicio del próximo buffer.
-        AccionSemanticaCompuesta accionSemantica6 = new AccionSemanticaCompuesta();
-        accionSemantica6.addAccion(accionSemantica2);
-        accionSemantica6.addAccion(new ControlarRangoEnteroLargo(this));
-        accionSemantica6.addAccion(accionSemantica14);
+        // AS6 -> Controla si es palabra reservada o si es identificador. Sino devuelve error
+        AccionSemanticaCompuesta AS6 = new AccionSemanticaCompuesta();
+        AS6.addAccion(AS4);
+        AS6.addAccion(AS5);
 
-        //AS7 -> Controlar rango de flotante; crea el token en caso de ser correcto. Ultimo caracter al inicio del próximo buffer.
-        AccionSemanticaCompuesta accionSemantica7 = new AccionSemanticaCompuesta();
-        accionSemantica7.addAccion(new ControlarRangoFlotante(this));
-        accionSemantica7.addAccion(accionSemantica14);
-        accionSemantica7.addAccion(accionSemantica12);
+        // AS7 -> Controla el rango de los float. Si está en rango, lo agrega a la tabla de símbolos, sino, devuelve error
+        AccionSemanticaSimple AS7 = new ControlarRangoFlotante(this);
 
-        //AS8 -> Controlar rango de exponente de flotante; crea el token en caso de ser correcto. Ultimo caracter al inicio del próximo buffer.
-        AccionSemanticaCompuesta accionSemantica8 = new AccionSemanticaCompuesta();
-        accionSemantica8.addAccion(new ControlarRangoExponenteFlotante(this));
-        accionSemantica8.addAccion(accionSemantica14);
-        accionSemantica8.addAccion(accionSemantica12);
+        // AS8 -> Controla el rango de los enteros largos. Si está en rango, lo agrega a la tabla de símbolos, sino, devuelve error
+        AccionSemanticaSimple AS8 = new ControlarRangoEnteroLargo(this);
 
-        //AS9 -> Agregar caracter y crear el token.
-        AccionSemanticaCompuesta accionSemantica9 = new AccionSemanticaCompuesta();
-        accionSemantica9.addAccion(accionSemantica2);
-        accionSemantica9.addAccion(accionSemantica14);
-        accionSemantica9.addAccion(accionSemantica12);
+        // AS9 -> Controla si el token es una cadena de caracteres y la agrega a la tabla de simbolos
+        AccionSemanticaSimple AS9 = new ControlarCadena(this);
 
-        //AS10 -> Crear el token y descartar el buffer.
-        AccionSemanticaCompuesta accionSemantica10 = new AccionSemanticaCompuesta();
-        accionSemantica10.addAccion(accionSemantica14);
-        accionSemantica10.addAccion(accionSemantica12);
+        // AS10 -> Devuelve el token asociado a los comparadores simples (>, <, =)
+        AccionSemanticaSimple AS10 = new DevolverComparadorSimple(this);
 
-        //AS11 -> Muestra error por cadena multilínea.
-        AccionSemanticaCompuesta accionSemantica11 = new AccionSemanticaCompuesta();
-        accionSemantica11.addAccion(new ErrorCadenaMultilinea(this));
-        accionSemantica11.addAccion(accionSemantica12);
+        // AS11 -> Devuelve el token asociado a los comparadores compuestos (<=, >=, ==, !=)
+        AccionSemanticaSimple AS11 = new DevolverComparadorCompuesto(this);
 
-        //AS15 -> Controlar longitud del identificador.
-        AccionSemanticaCompuesta accionSemantica15 = new AccionSemanticaCompuesta();
-        accionSemantica15.addAccion(accionSemantica2);
-        accionSemantica5.addAccion(new ControlarLongitudIdentificador(this));
+        // AS12 -> Devuelve el token asociado al literal '/'
+        AccionSemanticaSimple AS12 = new DevolverBarra(this);
 
+        // AS13 -> Descarta el buffer (lo pone en vacio)
+        AccionSemanticaSimple AS13 = new DescartarBuffer(this);
 
-        /***** MATRIZ DE ESTADOS *****/
-        this.matrizEstados = new MatrizTransicionEstados();
+        // AS14 -> Aumenta el valor de posArchivo para avanzar ignorando el caracter
+        AccionSemanticaSimple AS14 = new AvanzarEnCodigo(this);
 
+        // AS15 -> Comienzo de comentario. Descarta el caracter '/' y avanza en el código
+        AccionSemanticaCompuesta AS15 = new AccionSemanticaCompuesta();
+        AS15.addAccion(AS13);
+        AS15.addAccion(AS14);
 
-        /***** MATRIZ DE ACCIONES SEMÁNTICAS *****/
-                /*0*/    this.matrizAccionesSemanticas.set(0,0,accionSemantica1) ; this.matrizAccionesSemanticas.set(0,1,accionSemantica1Digitos) ; this.matrizAccionesSemanticas.set(0,2,accionSemantica1) ; this.matrizAccionesSemanticas.set(0,3,null)         ; this.matrizAccionesSemanticas.set(0,4,null)         ; this.matrizAccionesSemanticas.set(0,5,null)         ; this.matrizAccionesSemanticas.set(0,6,accionSemantica1) ; this.matrizAccionesSemanticas.set(0,7,accionSemantica1)  ; this.matrizAccionesSemanticas.set(0,8,accionSemantica1) ; this.matrizAccionesSemanticas.set(0,9,accionSemantica1) ; this.matrizAccionesSemanticas.set(0,10,accionSemantica3) ; this.matrizAccionesSemanticas.set(0,11,accionSemantica3) ; this.matrizAccionesSemanticas.set(0,12,accionSemantica3) ; this.matrizAccionesSemanticas.set(0,13,accionSemantica1)  ; this.matrizAccionesSemanticas.set(0,14,null)         ; this.matrizAccionesSemanticas.set(0,15,null)         ; this.matrizAccionesSemanticas.set(0,16,null)         ; this.matrizAccionesSemanticas.set(0,17,accionSemantica3); this.matrizAccionesSemanticas.set(0,18,accionSemantica3) ; this.matrizAccionesSemanticas.set(0,19,accionSemantica3) ; this.matrizAccionesSemanticas.set(0,20,accionSemantica1) ; this.matrizAccionesSemanticas.set(0,21,accionSemantica3) ; this.matrizAccionesSemanticas.set(0,22,accionSemantica3) ; this.matrizAccionesSemanticas.set(0,23,accionSemantica3) ; this.matrizAccionesSemanticas.set(0,24,accionSemantica3) ; this.matrizAccionesSemanticas.set(0,25,null)         ; this.matrizAccionesSemanticas.set(0,26,null);
-                /*1*/    this.matrizAccionesSemanticas.set(1,0,null)         ; this.matrizAccionesSemanticas.set(1,1,accionSemantica2) ; this.matrizAccionesSemanticas.set(1,2,accionSemantica2) ; this.matrizAccionesSemanticas.set(1,3,accionSemantica2) ; this.matrizAccionesSemanticas.set(1,4,null)         ; this.matrizAccionesSemanticas.set(1,5,null)         ; this.matrizAccionesSemanticas.set(1,6,null)         ; this.matrizAccionesSemanticas.set(1,7,null)          ; this.matrizAccionesSemanticas.set(1,8,null)         ; this.matrizAccionesSemanticas.set(1,9,null)         ; this.matrizAccionesSemanticas.set(1,10,null)         ; this.matrizAccionesSemanticas.set(1,11,null)         ; this.matrizAccionesSemanticas.set(1,12,null)         ; this.matrizAccionesSemanticas.set(1,13,null)          ; this.matrizAccionesSemanticas.set(1,14,null)         ; this.matrizAccionesSemanticas.set(1,15,null)         ; this.matrizAccionesSemanticas.set(1,16,null)         ; this.matrizAccionesSemanticas.set(1,17,null); this.matrizAccionesSemanticas.set(1,18,null)         ; this.matrizAccionesSemanticas.set(1,19,null)         ; this.matrizAccionesSemanticas.set(1,20,null)         ; this.matrizAccionesSemanticas.set(1,21,null)         ; this.matrizAccionesSemanticas.set(1,22,null)         ; this.matrizAccionesSemanticas.set(1,23,null)         ; this.matrizAccionesSemanticas.set(1,24,null)         ; this.matrizAccionesSemanticas.set(1,25,null)         ; this.matrizAccionesSemanticas.set(1,26,null);
-                /*2*/    this.matrizAccionesSemanticas.set(2,0,null)         ; this.matrizAccionesSemanticas.set(2,1,null)         ; this.matrizAccionesSemanticas.set(2,2,null)         ; this.matrizAccionesSemanticas.set(2,3,null)         ; this.matrizAccionesSemanticas.set(2,4,accionSemantica6) ; this.matrizAccionesSemanticas.set(2,5,null)         ; this.matrizAccionesSemanticas.set(2,6,null)         ; this.matrizAccionesSemanticas.set(2,7,null)          ; this.matrizAccionesSemanticas.set(2,8,null)         ; this.matrizAccionesSemanticas.set(2,9,null)         ; this.matrizAccionesSemanticas.set(2,10,null)         ; this.matrizAccionesSemanticas.set(2,11,null)         ; this.matrizAccionesSemanticas.set(2,12,null)         ; this.matrizAccionesSemanticas.set(2,13,null)          ; this.matrizAccionesSemanticas.set(2,14,null)         ; this.matrizAccionesSemanticas.set(2,15,null)         ; this.matrizAccionesSemanticas.set(2,16,null)         ; this.matrizAccionesSemanticas.set(2,17,null); this.matrizAccionesSemanticas.set(2,18,null)         ; this.matrizAccionesSemanticas.set(2,19,null)         ; this.matrizAccionesSemanticas.set(2,20,null)         ; this.matrizAccionesSemanticas.set(2,21,null)         ; this.matrizAccionesSemanticas.set(2,22,null)         ; this.matrizAccionesSemanticas.set(2,23,null)         ; this.matrizAccionesSemanticas.set(2,24,null)         ; this.matrizAccionesSemanticas.set(2,25,null)         ; this.matrizAccionesSemanticas.set(2,26,null);
-                /*3*/    this.matrizAccionesSemanticas.set(3,0,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,1,accionSemantica2) ; this.matrizAccionesSemanticas.set(3,2,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,3,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,4,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,5,accionSemantica2) ; this.matrizAccionesSemanticas.set(3,6,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,7,accionSemantica7)  ; this.matrizAccionesSemanticas.set(3,8,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,9,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,10,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,11,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,12,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,13,accionSemantica7)  ; this.matrizAccionesSemanticas.set(3,14,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,15,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,16,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,17,accionSemantica7); this.matrizAccionesSemanticas.set(3,18,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,19,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,20,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,21,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,22,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,23,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,24,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,25,accionSemantica7) ; this.matrizAccionesSemanticas.set(3,26,accionSemantica7);
-                /*4*/    this.matrizAccionesSemanticas.set(4,0,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,1,accionSemantica2) ; this.matrizAccionesSemanticas.set(4,2,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,3,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,4,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,5,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,6,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,7,accionSemantica8)  ; this.matrizAccionesSemanticas.set(4,8,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,9,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,10,accionSemantica2) ; this.matrizAccionesSemanticas.set(4,11,accionSemantica2) ; this.matrizAccionesSemanticas.set(4,12,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,13,accionSemantica8)  ; this.matrizAccionesSemanticas.set(4,14,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,15,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,16,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,17,accionSemantica8); this.matrizAccionesSemanticas.set(4,18,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,19,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,20,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,21,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,22,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,23,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,24,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,25,accionSemantica8) ; this.matrizAccionesSemanticas.set(4,26,accionSemantica8);
-                /*5*/    this.matrizAccionesSemanticas.set(5,0,accionSemantica10); this.matrizAccionesSemanticas.set(5,1,accionSemantica10); this.matrizAccionesSemanticas.set(5,2,accionSemantica10); this.matrizAccionesSemanticas.set(5,3,accionSemantica10); this.matrizAccionesSemanticas.set(5,4,accionSemantica10); this.matrizAccionesSemanticas.set(5,5,accionSemantica10); this.matrizAccionesSemanticas.set(5,6,accionSemantica10); this.matrizAccionesSemanticas.set(5,7,accionSemantica10) ; this.matrizAccionesSemanticas.set(5,8,accionSemantica9) ; this.matrizAccionesSemanticas.set(5,9,accionSemantica10); this.matrizAccionesSemanticas.set(5,10,accionSemantica10); this.matrizAccionesSemanticas.set(5,11,accionSemantica10); this.matrizAccionesSemanticas.set(5,12,accionSemantica10); this.matrizAccionesSemanticas.set(5,13,accionSemantica10) ; this.matrizAccionesSemanticas.set(5,14,accionSemantica10); this.matrizAccionesSemanticas.set(5,15,accionSemantica10); this.matrizAccionesSemanticas.set(5,16,accionSemantica10); this.matrizAccionesSemanticas.set(5,17,accionSemantica10); this.matrizAccionesSemanticas.set(5,18,accionSemantica10) ; this.matrizAccionesSemanticas.set(5,19,accionSemantica10); this.matrizAccionesSemanticas.set(5,20,accionSemantica10); this.matrizAccionesSemanticas.set(5,21,accionSemantica10); this.matrizAccionesSemanticas.set(5,22,accionSemantica10); this.matrizAccionesSemanticas.set(5,23,accionSemantica10); this.matrizAccionesSemanticas.set(5,24,accionSemantica10); this.matrizAccionesSemanticas.set(5,25,accionSemantica10); this.matrizAccionesSemanticas.set(5,26,accionSemantica10);
-                /*6*/    this.matrizAccionesSemanticas.set(6,0,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,1,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,2,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,3,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,4,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,5,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,6,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,7,accionSemantica2)  ; this.matrizAccionesSemanticas.set(6,8,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,9,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,10,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,11,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,12,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,13,accionSemantica2)  ; this.matrizAccionesSemanticas.set(6,14,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,15,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,16,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,17,accionSemantica2); this.matrizAccionesSemanticas.set(6,18,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,19,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,20,accionSemantica9) ; this.matrizAccionesSemanticas.set(6,21,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,22,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,23,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,24,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,25,accionSemantica2) ; this.matrizAccionesSemanticas.set(6,26,accionSemantica2);
-                /*7*/    this.matrizAccionesSemanticas.set(7,0,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,1,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,2,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,3,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,4,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,5,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,6,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,7,accionSemantica2)  ; this.matrizAccionesSemanticas.set(7,8,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,9,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,10,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,11,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,12,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,13,accionSemantica2)  ; this.matrizAccionesSemanticas.set(7,14,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,15,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,16,accionSemantica11); this.matrizAccionesSemanticas.set(7,17,accionSemantica2); this.matrizAccionesSemanticas.set(7,18,accionSemantica2); this.matrizAccionesSemanticas.set(7,19,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,20,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,21,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,22,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,23,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,24,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,25,accionSemantica2) ; this.matrizAccionesSemanticas.set(7,26,accionSemantica2);
-                /*8*/    this.matrizAccionesSemanticas.set(8,0,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,1,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,2,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,3,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,4,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,5,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,6,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,7,accionSemantica10)  ; this.matrizAccionesSemanticas.set(8,8,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,9,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,10,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,11,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,12,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,13,accionSemantica10)  ; this.matrizAccionesSemanticas.set(8,14,accionSemantica2) ; this.matrizAccionesSemanticas.set(8,15,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,16,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,17,accionSemantica10); this.matrizAccionesSemanticas.set(8,18,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,19,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,20,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,21,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,22,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,23,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,24,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,25,accionSemantica10) ; this.matrizAccionesSemanticas.set(8,26,accionSemantica10);
-                /*9*/    this.matrizAccionesSemanticas.set(9,0,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,1,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,2,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,3,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,4,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,5,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,6,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,7,accionSemantica2)  ; this.matrizAccionesSemanticas.set(9,8,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,9,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,10,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,11,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,12,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,13,accionSemantica2)  ; this.matrizAccionesSemanticas.set(9,14,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,15,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,16,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,17,accionSemantica2); this.matrizAccionesSemanticas.set(9,18,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,19,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,20,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,21,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,22,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,23,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,24,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,25,accionSemantica2) ; this.matrizAccionesSemanticas.set(9,26,accionSemantica2);
-                /*10*/   this.matrizAccionesSemanticas.set(10,0,accionSemantica2); this.matrizAccionesSemanticas.set(10,1,accionSemantica2); this.matrizAccionesSemanticas.set(10,2,accionSemantica2); this.matrizAccionesSemanticas.set(10,3,accionSemantica2); this.matrizAccionesSemanticas.set(10,4,accionSemantica2); this.matrizAccionesSemanticas.set(10,5,accionSemantica2); this.matrizAccionesSemanticas.set(10,6,accionSemantica2); this.matrizAccionesSemanticas.set(10,7,accionSemantica2) ; this.matrizAccionesSemanticas.set(10,8,accionSemantica2); this.matrizAccionesSemanticas.set(10,9,accionSemantica2); this.matrizAccionesSemanticas.set(10,10,accionSemantica2); this.matrizAccionesSemanticas.set(10,11,accionSemantica2); this.matrizAccionesSemanticas.set(10,12,accionSemantica2); this.matrizAccionesSemanticas.set(10,13,accionSemantica12); this.matrizAccionesSemanticas.set(10,14,accionSemantica2); this.matrizAccionesSemanticas.set(10,15,accionSemantica2); this.matrizAccionesSemanticas.set(10,16,accionSemantica2); this.matrizAccionesSemanticas.set(10,17,accionSemantica2); this.matrizAccionesSemanticas.set(10,18,accionSemantica2); this.matrizAccionesSemanticas.set(10,19,accionSemantica2); this.matrizAccionesSemanticas.set(10,20,accionSemantica2); this.matrizAccionesSemanticas.set(10,21,accionSemantica2); this.matrizAccionesSemanticas.set(10,22,accionSemantica2); this.matrizAccionesSemanticas.set(10,23,accionSemantica2); this.matrizAccionesSemanticas.set(10,24,accionSemantica2); this.matrizAccionesSemanticas.set(10,25,accionSemantica2); this.matrizAccionesSemanticas.set(10,26,accionSemantica2);
-                /*11*/   this.matrizAccionesSemanticas.set(11,0,accionSemantica2); this.matrizAccionesSemanticas.set(11,1,accionSemantica2); this.matrizAccionesSemanticas.set(11,2,accionSemantica5); this.matrizAccionesSemanticas.set(11,3,accionSemantica2); this.matrizAccionesSemanticas.set(11,4,accionSemantica2); this.matrizAccionesSemanticas.set(11,5,accionSemantica2); this.matrizAccionesSemanticas.set(11,6,accionSemantica5); this.matrizAccionesSemanticas.set(11,7,accionSemantica5) ; this.matrizAccionesSemanticas.set(11,8,accionSemantica5); this.matrizAccionesSemanticas.set(11,9,accionSemantica5); this.matrizAccionesSemanticas.set(11,10,accionSemantica5); this.matrizAccionesSemanticas.set(11,11,accionSemantica5); this.matrizAccionesSemanticas.set(11,12,accionSemantica5); this.matrizAccionesSemanticas.set(11,13,accionSemantica5); this.matrizAccionesSemanticas.set(11,14,accionSemantica5); this.matrizAccionesSemanticas.set(11,15,accionSemantica5); this.matrizAccionesSemanticas.set(11,16,accionSemantica5); this.matrizAccionesSemanticas.set(11,17,accionSemantica5); this.matrizAccionesSemanticas.set(11,18,accionSemantica5); this.matrizAccionesSemanticas.set(11,19,accionSemantica5); this.matrizAccionesSemanticas.set(11,20,accionSemantica5); this.matrizAccionesSemanticas.set(11,21,accionSemantica5); this.matrizAccionesSemanticas.set(11,22,accionSemantica5); this.matrizAccionesSemanticas.set(11,23,accionSemantica5); this.matrizAccionesSemanticas.set(11,24,accionSemantica5); this.matrizAccionesSemanticas.set(11,25,accionSemantica5); this.matrizAccionesSemanticas.set(11,26,accionSemantica5);
+        /** MATRIZ DE ACCIONES SEMÁNTICAS **/
+
+        /*0*/    this.matrizAccionesSemanticas.set(0,0,AS1) ; this.matrizAccionesSemanticas.set(0,1,AS1) ; this.matrizAccionesSemanticas.set(0,2,AS1) ; this.matrizAccionesSemanticas.set(0,3,null) ; this.matrizAccionesSemanticas.set(0,4,AS1) ; this.matrizAccionesSemanticas.set(0,5,AS1) ; this.matrizAccionesSemanticas.set(0,6,AS1) ; this.matrizAccionesSemanticas.set(0,7,AS1) ; this.matrizAccionesSemanticas.set(0,8,AS1) ; this.matrizAccionesSemanticas.set(0,9,AS1) ; this.matrizAccionesSemanticas.set(0,10,AS3) ; this.matrizAccionesSemanticas.set(0,11,AS3) ; this.matrizAccionesSemanticas.set(0,12,AS3) ; this.matrizAccionesSemanticas.set(0,13,AS1)  ; this.matrizAccionesSemanticas.set(0,14,null) ; this.matrizAccionesSemanticas.set(0,15,AS14) ; this.matrizAccionesSemanticas.set(0,16,AS3)  ; this.matrizAccionesSemanticas.set(0,17,AS3); this.matrizAccionesSemanticas.set(0,18,AS3) ; this.matrizAccionesSemanticas.set(0,19,AS3) ; this.matrizAccionesSemanticas.set(0,20,AS3) ; this.matrizAccionesSemanticas.set(0,21,AS3) ; this.matrizAccionesSemanticas.set(0,22,AS3) ; this.matrizAccionesSemanticas.set(0,23,AS3) ; this.matrizAccionesSemanticas.set(0,24,null) ; this.matrizAccionesSemanticas.set(0,25,AS14) ; this.matrizAccionesSemanticas.set(0,26,null);
+        /*1*/    this.matrizAccionesSemanticas.set(1,0,null) ; this.matrizAccionesSemanticas.set(1,1,AS2) ; this.matrizAccionesSemanticas.set(1,2,AS2) ; this.matrizAccionesSemanticas.set(1,3,AS14) ; this.matrizAccionesSemanticas.set(1,4,null) ; this.matrizAccionesSemanticas.set(1,5,null) ; this.matrizAccionesSemanticas.set(1,6,null) ; this.matrizAccionesSemanticas.set(1,7,null) ; this.matrizAccionesSemanticas.set(1,8,null) ; this.matrizAccionesSemanticas.set(1,9,null) ; this.matrizAccionesSemanticas.set(1,10,null) ; this.matrizAccionesSemanticas.set(1,11,null) ; this.matrizAccionesSemanticas.set(1,12,null) ; this.matrizAccionesSemanticas.set(1,13,null) ; this.matrizAccionesSemanticas.set(1,14,null) ; this.matrizAccionesSemanticas.set(1,15,null) ; this.matrizAccionesSemanticas.set(1,16,null) ; this.matrizAccionesSemanticas.set(1,17,null); this.matrizAccionesSemanticas.set(1,18,null) ; this.matrizAccionesSemanticas.set(1,19,null) ; this.matrizAccionesSemanticas.set(1,20,null) ; this.matrizAccionesSemanticas.set(1,21,null) ; this.matrizAccionesSemanticas.set(1,22,null) ; this.matrizAccionesSemanticas.set(1,23,null) ; this.matrizAccionesSemanticas.set(1,24,null) ; this.matrizAccionesSemanticas.set(1,25,null) ; this.matrizAccionesSemanticas.set(1,26,null);
+        /*2*/    this.matrizAccionesSemanticas.set(2,0,null) ; this.matrizAccionesSemanticas.set(2,1,null) ; this.matrizAccionesSemanticas.set(2,2,null) ; this.matrizAccionesSemanticas.set(2,3,null) ; this.matrizAccionesSemanticas.set(2,4,AS8) ; this.matrizAccionesSemanticas.set(2,5,null) ; this.matrizAccionesSemanticas.set(2,6,null) ; this.matrizAccionesSemanticas.set(2,7,null) ; this.matrizAccionesSemanticas.set(2,8,null) ; this.matrizAccionesSemanticas.set(2,9,null) ; this.matrizAccionesSemanticas.set(2,10,null) ; this.matrizAccionesSemanticas.set(2,11,null) ; this.matrizAccionesSemanticas.set(2,12,null) ; this.matrizAccionesSemanticas.set(2,13,null) ; this.matrizAccionesSemanticas.set(2,14,null) ; this.matrizAccionesSemanticas.set(2,15,null) ; this.matrizAccionesSemanticas.set(2,16,null) ; this.matrizAccionesSemanticas.set(2,17,null); this.matrizAccionesSemanticas.set(2,18,null)  ; this.matrizAccionesSemanticas.set(2,19,null) ; this.matrizAccionesSemanticas.set(2,20,null) ; this.matrizAccionesSemanticas.set(2,21,null) ; this.matrizAccionesSemanticas.set(2,22,null) ; this.matrizAccionesSemanticas.set(2,23,null) ; this.matrizAccionesSemanticas.set(2,24,null) ; this.matrizAccionesSemanticas.set(2,25,null) ; this.matrizAccionesSemanticas.set(2,26,null);
+        /*3*/    this.matrizAccionesSemanticas.set(3,0,AS7) ; this.matrizAccionesSemanticas.set(3,1,AS2) ; this.matrizAccionesSemanticas.set(3,2,AS7) ; this.matrizAccionesSemanticas.set(3,3,AS7) ; this.matrizAccionesSemanticas.set(3,4,AS7) ; this.matrizAccionesSemanticas.set(3,5,AS2) ; this.matrizAccionesSemanticas.set(3,6,AS7) ; this.matrizAccionesSemanticas.set(3,7,AS7)  ; this.matrizAccionesSemanticas.set(3,8,AS7) ; this.matrizAccionesSemanticas.set(3,9,AS7) ; this.matrizAccionesSemanticas.set(3,10,AS7) ; this.matrizAccionesSemanticas.set(3,11,AS7) ; this.matrizAccionesSemanticas.set(3,12,AS7) ; this.matrizAccionesSemanticas.set(3,13,AS7)  ; this.matrizAccionesSemanticas.set(3,14,AS7) ; this.matrizAccionesSemanticas.set(3,15,AS7) ; this.matrizAccionesSemanticas.set(3,16,AS7) ; this.matrizAccionesSemanticas.set(3,17,AS7); this.matrizAccionesSemanticas.set(3,18,AS7) ; this.matrizAccionesSemanticas.set(3,19,AS7) ; this.matrizAccionesSemanticas.set(3,20,AS7) ; this.matrizAccionesSemanticas.set(3,21,AS7) ; this.matrizAccionesSemanticas.set(3,22,AS7) ; this.matrizAccionesSemanticas.set(3,23,AS7) ; this.matrizAccionesSemanticas.set(3,24,AS7) ; this.matrizAccionesSemanticas.set(3,25,AS7) ; this.matrizAccionesSemanticas.set(3,26,AS7);
+        /*4*/    this.matrizAccionesSemanticas.set(4,0,null) ; this.matrizAccionesSemanticas.set(4,1,AS2) ; this.matrizAccionesSemanticas.set(4,2,null) ; this.matrizAccionesSemanticas.set(4,3,null) ; this.matrizAccionesSemanticas.set(4,4,null) ; this.matrizAccionesSemanticas.set(4,5,null) ; this.matrizAccionesSemanticas.set(4,6,null) ; this.matrizAccionesSemanticas.set(4,7,null) ; this.matrizAccionesSemanticas.set(4,8,null) ; this.matrizAccionesSemanticas.set(4,9,null) ; this.matrizAccionesSemanticas.set(4,10,AS2) ; this.matrizAccionesSemanticas.set(4,11,AS2) ; this.matrizAccionesSemanticas.set(4,12,null) ; this.matrizAccionesSemanticas.set(4,13,null)  ; this.matrizAccionesSemanticas.set(4,14,null) ; this.matrizAccionesSemanticas.set(4,15,null) ; this.matrizAccionesSemanticas.set(4,16,null) ; this.matrizAccionesSemanticas.set(4,17,null); this.matrizAccionesSemanticas.set(4,18,null) ; this.matrizAccionesSemanticas.set(4,19,null) ; this.matrizAccionesSemanticas.set(4,20,null) ; this.matrizAccionesSemanticas.set(4,21,null) ; this.matrizAccionesSemanticas.set(4,22,null) ; this.matrizAccionesSemanticas.set(4,23,null) ; this.matrizAccionesSemanticas.set(4,24,null) ; this.matrizAccionesSemanticas.set(4,25,null) ; this.matrizAccionesSemanticas.set(4,26,null);
+        /*5*/    this.matrizAccionesSemanticas.set(5,0,AS10); this.matrizAccionesSemanticas.set(5,1,AS10); this.matrizAccionesSemanticas.set(5,2,AS10); this.matrizAccionesSemanticas.set(5,3,AS10); this.matrizAccionesSemanticas.set(5,4,AS10); this.matrizAccionesSemanticas.set(5,5,AS10); this.matrizAccionesSemanticas.set(5,6,AS10); this.matrizAccionesSemanticas.set(5,7,AS10) ; this.matrizAccionesSemanticas.set(5,8,AS11) ; this.matrizAccionesSemanticas.set(5,9,AS10); this.matrizAccionesSemanticas.set(5,10,AS10); this.matrizAccionesSemanticas.set(5,11,AS10); this.matrizAccionesSemanticas.set(5,12,AS10); this.matrizAccionesSemanticas.set(5,13,AS10) ; this.matrizAccionesSemanticas.set(5,14,AS10); this.matrizAccionesSemanticas.set(5,15,AS10); this.matrizAccionesSemanticas.set(5,16,AS10); this.matrizAccionesSemanticas.set(5,17,AS10); this.matrizAccionesSemanticas.set(5,18,AS10) ; this.matrizAccionesSemanticas.set(5,19,AS10); this.matrizAccionesSemanticas.set(5,20,AS10); this.matrizAccionesSemanticas.set(5,21,AS10); this.matrizAccionesSemanticas.set(5,22,AS10); this.matrizAccionesSemanticas.set(5,23,AS10); this.matrizAccionesSemanticas.set(5,24,AS10); this.matrizAccionesSemanticas.set(5,25,AS10); this.matrizAccionesSemanticas.set(5,26,AS10);
+        /*6*/    this.matrizAccionesSemanticas.set(6,0,AS2) ; this.matrizAccionesSemanticas.set(6,1,AS2) ; this.matrizAccionesSemanticas.set(6,2,AS2) ; this.matrizAccionesSemanticas.set(6,3,AS2) ; this.matrizAccionesSemanticas.set(6,4,AS2) ; this.matrizAccionesSemanticas.set(6,5,AS2) ; this.matrizAccionesSemanticas.set(6,6,AS2) ; this.matrizAccionesSemanticas.set(6,7,AS2) ; this.matrizAccionesSemanticas.set(6,8,AS2) ; this.matrizAccionesSemanticas.set(6,9,AS2) ; this.matrizAccionesSemanticas.set(6,10,AS2) ; this.matrizAccionesSemanticas.set(6,11,AS2) ; this.matrizAccionesSemanticas.set(6,12,AS2) ; this.matrizAccionesSemanticas.set(6,13,AS2)  ; this.matrizAccionesSemanticas.set(6,14,AS2) ; this.matrizAccionesSemanticas.set(6,15,null) ; this.matrizAccionesSemanticas.set(6,16,AS2) ; this.matrizAccionesSemanticas.set(6,17,AS2); this.matrizAccionesSemanticas.set(6,18,AS2) ; this.matrizAccionesSemanticas.set(6,19,AS9) ; this.matrizAccionesSemanticas.set(6,20,AS2) ; this.matrizAccionesSemanticas.set(6,21,AS2) ; this.matrizAccionesSemanticas.set(6,22,AS2) ; this.matrizAccionesSemanticas.set(6,23,AS2) ; this.matrizAccionesSemanticas.set(6,24,AS2) ; this.matrizAccionesSemanticas.set(6,25,AS2) ; this.matrizAccionesSemanticas.set(6,26,AS2);
+        /*7*/    this.matrizAccionesSemanticas.set(7,0,AS12) ; this.matrizAccionesSemanticas.set(7,1,AS12) ; this.matrizAccionesSemanticas.set(7,2,AS12) ; this.matrizAccionesSemanticas.set(7,3,AS12) ; this.matrizAccionesSemanticas.set(7,4,AS12) ; this.matrizAccionesSemanticas.set(7,5,AS12) ; this.matrizAccionesSemanticas.set(7,6,AS12) ; this.matrizAccionesSemanticas.set(7,7,AS12) ; this.matrizAccionesSemanticas.set(7,8,AS12) ; this.matrizAccionesSemanticas.set(7,9,AS12) ; this.matrizAccionesSemanticas.set(7,10,AS12) ; this.matrizAccionesSemanticas.set(7,11,AS12) ; this.matrizAccionesSemanticas.set(7,12,AS12) ; this.matrizAccionesSemanticas.set(7,13,AS12)  ; this.matrizAccionesSemanticas.set(7,14,AS15) ; this.matrizAccionesSemanticas.set(7,15,AS12) ; this.matrizAccionesSemanticas.set(7,16,AS12); this.matrizAccionesSemanticas.set(7,17,AS12); this.matrizAccionesSemanticas.set(7,18,AS12); this.matrizAccionesSemanticas.set(7,19,AS12) ; this.matrizAccionesSemanticas.set(7,20,AS12) ; this.matrizAccionesSemanticas.set(7,21,AS12) ; this.matrizAccionesSemanticas.set(7,22,AS12) ; this.matrizAccionesSemanticas.set(7,23,AS12) ; this.matrizAccionesSemanticas.set(7,24,AS12) ; this.matrizAccionesSemanticas.set(7,25,AS12) ; this.matrizAccionesSemanticas.set(7,26,AS12);
+        /*8*/    this.matrizAccionesSemanticas.set(8,0,AS14) ; this.matrizAccionesSemanticas.set(8,1,AS14) ; this.matrizAccionesSemanticas.set(8,2,AS14) ; this.matrizAccionesSemanticas.set(8,3,AS14) ; this.matrizAccionesSemanticas.set(8,4,AS14) ; this.matrizAccionesSemanticas.set(8,5,AS14) ; this.matrizAccionesSemanticas.set(8,6,AS14) ; this.matrizAccionesSemanticas.set(8,7,AS14) ; this.matrizAccionesSemanticas.set(8,8,AS14) ; this.matrizAccionesSemanticas.set(8,9,AS14) ; this.matrizAccionesSemanticas.set(8,10,AS14) ; this.matrizAccionesSemanticas.set(8,11,AS14) ; this.matrizAccionesSemanticas.set(8,12,AS14) ; this.matrizAccionesSemanticas.set(8,13,AS14)  ; this.matrizAccionesSemanticas.set(8,14,AS14) ; this.matrizAccionesSemanticas.set(8,15,AS14) ; this.matrizAccionesSemanticas.set(8,16,AS14) ; this.matrizAccionesSemanticas.set(8,17,AS14); this.matrizAccionesSemanticas.set(8,18,AS14) ; this.matrizAccionesSemanticas.set(8,19,AS14) ; this.matrizAccionesSemanticas.set(8,20,AS14) ; this.matrizAccionesSemanticas.set(8,21,AS14) ; this.matrizAccionesSemanticas.set(8,22,AS14) ; this.matrizAccionesSemanticas.set(8,23,AS14) ; this.matrizAccionesSemanticas.set(8,24,AS14) ; this.matrizAccionesSemanticas.set(8,25,AS14) ; this.matrizAccionesSemanticas.set(8,26,AS14);
+        /*9*/    this.matrizAccionesSemanticas.set(9,0,AS14) ; this.matrizAccionesSemanticas.set(9,1,AS14) ; this.matrizAccionesSemanticas.set(9,2,AS14) ; this.matrizAccionesSemanticas.set(9,3,AS14) ; this.matrizAccionesSemanticas.set(9,4,AS14) ; this.matrizAccionesSemanticas.set(9,5,AS14) ; this.matrizAccionesSemanticas.set(9,6,AS14) ; this.matrizAccionesSemanticas.set(9,7,AS14) ; this.matrizAccionesSemanticas.set(9,8,AS14) ; this.matrizAccionesSemanticas.set(9,9,AS14) ; this.matrizAccionesSemanticas.set(9,10,AS14) ; this.matrizAccionesSemanticas.set(9,11,AS14) ; this.matrizAccionesSemanticas.set(9,12,AS14) ; this.matrizAccionesSemanticas.set(9,13,AS14)  ; this.matrizAccionesSemanticas.set(9,14,AS14) ; this.matrizAccionesSemanticas.set(9,15,AS14) ; this.matrizAccionesSemanticas.set(9,16,AS14) ; this.matrizAccionesSemanticas.set(9,17,AS14); this.matrizAccionesSemanticas.set(9,18,AS14) ; this.matrizAccionesSemanticas.set(9,19,AS14) ; this.matrizAccionesSemanticas.set(9,20,AS14) ; this.matrizAccionesSemanticas.set(9,21,AS14) ; this.matrizAccionesSemanticas.set(9,22,AS14) ; this.matrizAccionesSemanticas.set(9,23,AS14) ; this.matrizAccionesSemanticas.set(9,24,AS14) ; this.matrizAccionesSemanticas.set(9,25,AS14) ; this.matrizAccionesSemanticas.set(9,26,AS14);
+        /*10*/   this.matrizAccionesSemanticas.set(10,0,AS2) ; this.matrizAccionesSemanticas.set(10,1,AS2); this.matrizAccionesSemanticas.set(10,2,AS6); this.matrizAccionesSemanticas.set(10,3,AS2); this.matrizAccionesSemanticas.set(10,4,AS2); this.matrizAccionesSemanticas.set(10,5,AS2); this.matrizAccionesSemanticas.set(10,6,AS6); this.matrizAccionesSemanticas.set(10,7,AS6) ; this.matrizAccionesSemanticas.set(10,8,AS6); this.matrizAccionesSemanticas.set(10,9,AS6); this.matrizAccionesSemanticas.set(10,10,AS6); this.matrizAccionesSemanticas.set(10,11,AS6); this.matrizAccionesSemanticas.set(10,12,AS6); this.matrizAccionesSemanticas.set(10,13,AS6); this.matrizAccionesSemanticas.set(10,14,AS6); this.matrizAccionesSemanticas.set(10,15,AS6); this.matrizAccionesSemanticas.set(10,16,AS6); this.matrizAccionesSemanticas.set(10,17,AS6); this.matrizAccionesSemanticas.set(10,18,AS6); this.matrizAccionesSemanticas.set(10,19,AS6); this.matrizAccionesSemanticas.set(10,20,AS6); this.matrizAccionesSemanticas.set(10,21,AS6); this.matrizAccionesSemanticas.set(10,22,AS6); this.matrizAccionesSemanticas.set(10,23,AS6); this.matrizAccionesSemanticas.set(10,24,AS6); this.matrizAccionesSemanticas.set(10,25,AS6); this.matrizAccionesSemanticas.set(10,26,AS6);
+        /*11*/   this.matrizAccionesSemanticas.set(11,0,null) ; this.matrizAccionesSemanticas.set(11,1,AS2); this.matrizAccionesSemanticas.set(11,2,null); this.matrizAccionesSemanticas.set(11,3,null); this.matrizAccionesSemanticas.set(11,4,null); this.matrizAccionesSemanticas.set(11,5,null); this.matrizAccionesSemanticas.set(11,6,null); this.matrizAccionesSemanticas.set(11,7,null) ; this.matrizAccionesSemanticas.set(11,8,null); this.matrizAccionesSemanticas.set(11,9,null); this.matrizAccionesSemanticas.set(11,10,null); this.matrizAccionesSemanticas.set(11,11,null); this.matrizAccionesSemanticas.set(11,12,null); this.matrizAccionesSemanticas.set(11,13,null); this.matrizAccionesSemanticas.set(11,14,null); this.matrizAccionesSemanticas.set(11,15,null); this.matrizAccionesSemanticas.set(11,16,null); this.matrizAccionesSemanticas.set(11,17,null); this.matrizAccionesSemanticas.set(11,18,null); this.matrizAccionesSemanticas.set(11,19,null); this.matrizAccionesSemanticas.set(11,20,null); this.matrizAccionesSemanticas.set(11,21,null); this.matrizAccionesSemanticas.set(11,22,null); this.matrizAccionesSemanticas.set(11,23,null); this.matrizAccionesSemanticas.set(11,24,null); this.matrizAccionesSemanticas.set(11,25,null); this.matrizAccionesSemanticas.set(11,26,null);
+        /*12*/    this.matrizAccionesSemanticas.set(12,0,null) ; this.matrizAccionesSemanticas.set(12,1,AS2) ; this.matrizAccionesSemanticas.set(12,2,null) ; this.matrizAccionesSemanticas.set(12,3,null) ; this.matrizAccionesSemanticas.set(12,4,null) ; this.matrizAccionesSemanticas.set(12,5,null) ; this.matrizAccionesSemanticas.set(12,6,null) ; this.matrizAccionesSemanticas.set(12,7,null) ; this.matrizAccionesSemanticas.set(12,8,null) ; this.matrizAccionesSemanticas.set(12,9,null) ; this.matrizAccionesSemanticas.set(12,10,null) ; this.matrizAccionesSemanticas.set(12,11,null) ; this.matrizAccionesSemanticas.set(12,12,null) ; this.matrizAccionesSemanticas.set(12,13,null)  ; this.matrizAccionesSemanticas.set(12,14,null) ; this.matrizAccionesSemanticas.set(12,15,null) ; this.matrizAccionesSemanticas.set(12,16,null) ; this.matrizAccionesSemanticas.set(12,17,null); this.matrizAccionesSemanticas.set(12,18,null) ; this.matrizAccionesSemanticas.set(12,19,null) ; this.matrizAccionesSemanticas.set(12,20,null) ; this.matrizAccionesSemanticas.set(12,21,null) ; this.matrizAccionesSemanticas.set(12,22,null) ; this.matrizAccionesSemanticas.set(12,23,null) ; this.matrizAccionesSemanticas.set(12,24,null) ; this.matrizAccionesSemanticas.set(12,25,null) ; this.matrizAccionesSemanticas.set(12,26,null);
+        /*13*/    this.matrizAccionesSemanticas.set(13,0,AS7) ; this.matrizAccionesSemanticas.set(13,1,AS2) ; this.matrizAccionesSemanticas.set(13,2,AS7) ; this.matrizAccionesSemanticas.set(13,3,AS7) ; this.matrizAccionesSemanticas.set(13,4,AS7) ; this.matrizAccionesSemanticas.set(13,5,AS7) ; this.matrizAccionesSemanticas.set(13,6,AS7) ; this.matrizAccionesSemanticas.set(13,7,AS7) ; this.matrizAccionesSemanticas.set(13,8,AS7) ; this.matrizAccionesSemanticas.set(13,9,AS7) ; this.matrizAccionesSemanticas.set(13,10,AS7) ; this.matrizAccionesSemanticas.set(13,11,AS7) ; this.matrizAccionesSemanticas.set(13,12,AS7) ; this.matrizAccionesSemanticas.set(13,13,AS7) ; this.matrizAccionesSemanticas.set(13,14,AS7) ; this.matrizAccionesSemanticas.set(13,15,AS7) ; this.matrizAccionesSemanticas.set(13,16,AS7)  ; this.matrizAccionesSemanticas.set(13,17,AS7); this.matrizAccionesSemanticas.set(13,18,AS7) ; this.matrizAccionesSemanticas.set(13,19,AS7) ; this.matrizAccionesSemanticas.set(13,20,AS7) ; this.matrizAccionesSemanticas.set(13,21,AS7) ; this.matrizAccionesSemanticas.set(13,22,AS7) ; this.matrizAccionesSemanticas.set(13,23,AS7) ; this.matrizAccionesSemanticas.set(13,24,AS7) ; this.matrizAccionesSemanticas.set(13,25,AS7) ; this.matrizAccionesSemanticas.set(13,26,AS7);
+        /*14*/    this.matrizAccionesSemanticas.set(14,0,null) ; this.matrizAccionesSemanticas.set(14,1,null) ; this.matrizAccionesSemanticas.set(14,2,null) ; this.matrizAccionesSemanticas.set(14,3,null) ; this.matrizAccionesSemanticas.set(14,4,null) ; this.matrizAccionesSemanticas.set(14,5,null) ; this.matrizAccionesSemanticas.set(14,6,null) ; this.matrizAccionesSemanticas.set(14,7,null) ; this.matrizAccionesSemanticas.set(14,8,AS11) ; this.matrizAccionesSemanticas.set(14,9,null) ; this.matrizAccionesSemanticas.set(14,10,null) ; this.matrizAccionesSemanticas.set(14,11,null) ; this.matrizAccionesSemanticas.set(14,12,null) ; this.matrizAccionesSemanticas.set(14,13,null) ; this.matrizAccionesSemanticas.set(2,14,null) ; this.matrizAccionesSemanticas.set(14,15,null) ; this.matrizAccionesSemanticas.set(14,16,null) ; this.matrizAccionesSemanticas.set(14,17,null); this.matrizAccionesSemanticas.set(14,18,null) ; this.matrizAccionesSemanticas.set(14,19,null) ; this.matrizAccionesSemanticas.set(14,20,null) ; this.matrizAccionesSemanticas.set(14,21,null) ; this.matrizAccionesSemanticas.set(14,22,null) ; this.matrizAccionesSemanticas.set(14,23,null) ; this.matrizAccionesSemanticas.set(14,24,null) ; this.matrizAccionesSemanticas.set(14,25,null) ; this.matrizAccionesSemanticas.set(14,26,null);
 
 
-        /***** PROCESAMIENTO DEL ARCHIVO DE ENTRADA *****/
-        this.procesar();
+    }
+
+    /*** GETTERS Y SETTERS ***/
+
+    public String getArchivo() {
+        return archivo;
+    }
+
+    public void setArchivo(String archivo) {
+        this.archivo = archivo;
     }
 
     public String getBuffer() {
@@ -201,244 +181,188 @@ public class AnalizadorLexico {
         this.buffer = buffer;
     }
 
-    public String getArchivo() {
-        return archivo;
+    public int getPosArchivo() {
+        return posArchivo;
     }
 
-    public void setArchivo(String archivo) {
-        this.archivo = archivo;
+    public void setPosArchivo(int posArchivo) {
+        this.posArchivo = posArchivo;
     }
 
-    public Vector<Token> getTokens() {
-        return (Vector<Token>) tokens.clone();
+    public int getEstadoActual() {
+        return estadoActual;
     }
 
-    public int getLinea() {
-        return linea;
+    public void setEstadoActual(int estadoActual) {
+        this.estadoActual = estadoActual;
     }
 
-    public void setLinea(int linea) {
-        this.linea = linea;
+    public int getTokenActual() {
+        return tokenActual;
     }
 
-    public Boolean getDescartoBuffer() {
-        return descartoBuffer;
+    public void setTokenActual(int tokenActual) {
+        this.tokenActual = tokenActual;
     }
 
-    public void setDescartoBuffer(Boolean descartoBuffer) {
-        this.descartoBuffer = descartoBuffer;
+    public int getRefTablaSimbolos() { return refTablaSimbolos; }
+
+    public void setRefTablaSimbolos(int refTablaSimbolos) { this.refTablaSimbolos = refTablaSimbolos; }
+
+    public Vector<RegistroSimbolo> getTablaSimbolos() {
+        return tablaSimbolos;
     }
 
-    public Boolean getCaracterLeido() {
-        return caracterLeido;
+    public Vector<Token> getListaTokens() {
+        return listaTokens;
     }
 
-    public void setCaracterLeido(Boolean caracterLeido) {
-        this.caracterLeido = caracterLeido;
+    public ArrayList<String> getListaErrores() {
+        return listaErrores;
     }
 
-    public int getTotalTokens() {
-        return totalTokens;
-    }
+    // Método para obtener el ID Token, dado un tipo de token
+    public int getIdToken(String tipoToken) { return this.idTokens.get(tipoToken); }
 
-    public void setTotalTokens(int totalTokens) {
-        this.totalTokens = totalTokens;
-    }
-
-    public int getContadorToken() {
-        return contadorToken;
-    }
-
-    public void setContadorToken(int contadorToken) {
-        this.contadorToken = contadorToken;
-    }
-
-    public void addToken(String stringToken) {
-        int idToken = this.getIdToken(stringToken);
-        String tipoToken = this.getTipoToken(idToken);
-        RegistroSimbolo simbolo = new RegistroSimbolo(stringToken, tipoToken);
-        int linea = this.getLinea();
-
-        if (tipoToken.equals(this.IDENTIFICADOR) || tipoToken.equals(this.CONSTANTE)) {
-            if (this.esConstante(stringToken) && stringToken.contains("_l"))
-                simbolo.setTipoIdCte("LONGINT");
-            else
-                simbolo.setTipoIdCte("FLOAT");
-
-            if (!this.contieneSimbolo(stringToken))
-                this.tablaSimbolos.add(simbolo);
-            else
-                simbolo = this.getRegistroSimbolo(stringToken);
+    // Método para agregar un token a la tabla de símbolos. Si el token está en la tabla de símbolos se asigna
+    // su respectiva referencia a la misma
+    public void agregarTokenATablaSimbolos(String lexema, String tipo) {
+        int indiceEnTS = this.getIndiceEnTablaSimbolos(lexema);
+        // Si está en la tabla de símbolos, paso el índice a la referencia en tabla de símbolos
+        if (indiceEnTS != -1)
+            this.refTablaSimbolos = indiceEnTS;
+        else {  // Si no está en la tabla de símbolos, lo agrego al final del arreglo
+            RegistroSimbolo nuevo = new RegistroSimbolo(lexema, tipo);
+            this.tablaSimbolos.add(nuevo);
+            this.refTablaSimbolos = this.tablaSimbolos.size() - 1;
         }
-
-        Token token = new Token(idToken, stringToken, linea, tipoToken, simbolo);
-        this.tokens.add(token);
-        this.totalTokens++;
     }
 
-    public int getIdToken(String stringToken) {
-        int idToken = -1;
-
-        if (this.idTokens.containsKey(stringToken))
-            idToken = this.idTokens.get(stringToken);
-        else if (this.esConstante(stringToken))
-            idToken = this.idTokens.get(CONSTANTE);
-        else if (this.esIdentificador(stringToken))
-            idToken = this.idTokens.get(IDENTIFICADOR);
-        else if (this.esCadena(stringToken))
-            idToken = this.ID_CADENA;
-
-        return idToken;
-    }
-
-    public String getTipoToken(int idToken) {
-        if (idToken == (int) '+' || idToken == (int) '-' || idToken == (int) '*' || idToken == (int) '/')
-            return this.OPERADOR;
-        else if (idToken == (int) ')' || idToken == (int) '(' || idToken == (int) '}' || idToken == (int) '{' || idToken == (int) ',' || idToken == (int) ';' || idToken == (int) ':' || idToken == (int) '.')
-            return this.SIMBOLO_PUNTUACION;
-        else if (idToken == (int) '<' || idToken == (int) '>' || (idToken >= 275 && idToken <= 278))
-            return this.COMPARADOR;
-        else if (idToken == (int) '=')
-            return this.ASIGNACION;
-        else if (idToken == 257)
-            return this.IDENTIFICADOR;
-        else if (idToken == 258)
-            return this.CONSTANTE;
-        else if (idToken >= 259 && idToken <= 273)
-            return this.PALABRA_RESERVADA;
-        else if (idToken == this.ID_CADENA)
-            return CADENA;
-
-        return "";
-    }
-
-    private Boolean esConstante(String stringToken) {
-        if (stringToken.contains("_l"))
-            return true;
-        else {
-            for (int i = 0; i < stringToken.length(); i++) {
-                Character c = stringToken.charAt(i);
-
-                if (!(c.equals('f') || Character.isDigit(c) || c.equals('.')))
-                    return false;
-            }
+    // Método para buscar un token en la tabla de símbolos y devolver su índice para asignar la referencia a la TS
+    public int getIndiceEnTablaSimbolos(String lexema) {
+        for (int i = 0; i < tablaSimbolos.size(); i++) {
+            if (lexema == tablaSimbolos.get(i).getLexema())
+                return i;
         }
-
-        return true;
+        return -1;
     }
 
-    public Boolean esPalabraReservada(String posiblePalabra) {
-        return this.idTokens.keySet().contains(posiblePalabra);
+    // Método para agregar errores léxicos
+    public void addErrorLexico(String error) { this.listaErrores.add(error); }
+
+    public void addToken(Token nuevo) { this.listaTokens.add(nuevo); }
+
+    // Determina si un token es palabra reservada
+    public boolean esPalabraReservada(String posiblePalabra) {
+        switch (posiblePalabra) {
+            case "IF":
+            case "THEN":
+            case "ELSE":
+            case "END_IF":
+            case "OUT":
+            case "FUNC":
+            case "RETURN":
+            case "FOR":
+            case "LONGINT":
+            case "FLOAT":
+            case "UP":
+            case "DOWN":
+            case "NI":
+            case "REF":
+            case "PROC":
+                return true;
+            default:
+                return false;
+        }
     }
 
-    public Boolean esIdentificador(String stringToken) {
+    // Determina si un token es un identificador
+    public boolean esIdentificador(String stringToken) {
         if (!Character.isLetter(stringToken.charAt(0)))
             return false;
 
         for (int i = 0; i < stringToken.length(); i++) {
-            Character c = stringToken.charAt(i);
+            char c = stringToken.charAt(i);
 
-            if (!(c.equals('_') || Character.isDigit(c) || (Character.isLetter(c) && Character.isLowerCase(c))))
+            if (!(c == '_' || Character.isDigit(c) || (Character.isLetter(c) && Character.isLowerCase(c))))
                 return false;
         }
 
         return true;
     }
 
-    private Boolean esComentario(Character caracter, int posicionCaracter) {
-        if (posicionCaracter > 0)
-            if (caracter == '/' && this.archivo.charAt(posicionCaracter - 1) == '%')
-                return true;
-        return false;
-    }
-
-    private Boolean esCadena(String posibleCadena) {
-        if (posibleCadena.charAt(0) == '\'' && posibleCadena.charAt(posibleCadena.length() - 1) == '\'')
-            return true;
-        return false;
-    }
-
-    private Boolean esComparador(Character caracter, Character caracterAnterior) {
-        int idCaracter = this.getIdToken(caracter.toString());
-        int idCaracterAnterior = this.getIdToken(caracterAnterior.toString());
-        String tipoCaracter = this.getTipoToken(idCaracter);
-        String tipoCaracterAnterior = this.getTipoToken(idCaracterAnterior);
-        if ((tipoCaracter == this.COMPARADOR || tipoCaracter == this.ASIGNACION) && (tipoCaracterAnterior == this.COMPARADOR || tipoCaracterAnterior == this.ASIGNACION || caracterAnterior == '!'))
-            return true;
-        return false;
-    }
-
-    public void addErrorLexico(String errorLexico, int linea) {
-        this.erroresLexicos.put(errorLexico, linea);
-    }
-
-    public void procesar() {
-        int estado = PRIMER_ESTADO;
-        int i = 0;
-        Boolean flagDescarte = false;
-        Boolean flagCorte = false;
-
-        while (i < this.archivo.length() && !flagCorte) {
-            Character simbolo = this.archivo.charAt(i);
-            Character simboloAnterior = null;
-            if (i > 0)
-                simboloAnterior = this.archivo.charAt(i - 1);
-            int columnaSimbolo = this.getColumnaCaracter(simbolo, simboloAnterior);
-            AccionSemantica accion = this.matrizAccionesSemanticas.get(estado, columnaSimbolo);
-            int nuevoEstado = this.matrizEstados.get(estado, columnaSimbolo);
-
-            if (flagDescarte)
-                this.setDescartoBuffer(false);
-
-            if (accion != null && !this.caracterLeido)
-                accion.ejecutar(this.getBuffer(), simbolo);
-
-            if (nuevoEstado == ULTIMO_ESTADO)
-                estado = 0;
-            else if (nuevoEstado != -1)
-                estado = nuevoEstado;
-            else if (simbolo != '$') {
-                if (i > 0) {
-                    if (this.archivo.charAt(i) == '\n' || (this.archivo.charAt(i - 1) == '\\' && this.archivo.charAt(i) == 'n'))
-                        this.linea++;
-                    else
-                        this.addErrorLexico("Caracter no válido", this.getLinea());
-                }
-                estado = 0;
-            }
-
-            if (this.archivo.charAt(this.archivo.length() - 2) != '$')
-                this.addErrorLexico("Fin de archivo incorrectamente definido", this.getLinea());
-
-            if (this.archivo.charAt(i) == '$') {
-                if (this.getBuffer().contains("/%") && !this.esComentario(simbolo, i))
-                    this.addErrorLexico("Comentario mal definido", this.getLinea());
-                flagCorte = true;
-            }
-
-            if (!this.getDescartoBuffer()
-                    || (simbolo == 'l' && simboloAnterior == '_')
-                    || (this.getDescartoBuffer() && this.esComentario(simbolo, i))
-                    || (this.getDescartoBuffer() && this.esComparador(simbolo, simboloAnterior))) {
-                i++;
-                flagDescarte = false;
-            }
-            else
-                flagDescarte = true;
-
+    // Devuelve el tipo de token para poder agregarlo al Token cuando se está creando
+    public String getTipoToken(int idToken) {
+        String tipo;
+        switch (idToken) {
+            case (int) '+':
+            case (int) '-':
+            case (int) '*':
+            case (int) '/':
+                tipo = "OPERADOR ARITMETICO";
+                break;
+            case (int) '(':
+            case (int) ')':
+            case (int) '{':
+            case (int) '}':
+            case (int) ',':
+            case (int) ';':
+            case (int) ':':
+                tipo = "LITERAL";
+                break;
+            case (int) '<':
+            case (int) '>':
+            case 275:
+            case 276:
+            case 277:
+            case 278:
+                tipo = "COMPARADOR";
+                break;
+            case (int) '=':
+                tipo = "ASIGNACION";
+                break;
+            case 257:
+                tipo = "IDENTIFICADOR";
+                break;
+            case 258:
+                tipo = "CONSTANTE";
+                break;
+            case 259:
+            case 260:
+            case 261:
+            case 262:
+            case 263:
+            case 264:
+            case 265:
+            case 266:
+            case 267:
+            case 268:
+            case 269:
+            case 270:
+            case 271:
+            case 272:
+            case 273:
+                tipo = "PALABRA RESERVADA";
+                break;
+            case 274:
+                tipo = "CADENA DE CARACTERES";
+                break;
+            default:
+                tipo = "";
+                break;
         }
+
+        return tipo;
     }
 
-    public int getColumnaCaracter(Character caracter, Character caracterAnterior) {
+    // Dado un caracter, devuelve su columna asociada en la matriz de transición de estados
+    public int getColumnaCaracter(Character caracter) {
         if (caracter == null)
             return -1;
-        if (caracter == 'l' && caracterAnterior == '_')
+        if (caracter == 'l')
             return 4;
-        if (caracterAnterior != null)
-            if (caracter == 'f' && Character.isDigit(caracterAnterior))
-                return 5;
-        if (caracter == 'n' && caracterAnterior == '\\')
-            return 16;
+        if (caracter == 'f')
+            return 5;
         if (Character.isLetter(caracter))
             return 0;
         if (Character.isDigit(caracter))
@@ -455,49 +379,103 @@ public class AnalizadorLexico {
             case '*': return 12;
             case '/': return 13;
             case '%': return 14;
-            case '\\': return 15; //Barra invertida
-            case ';': return 17;
-            case ':' : return 18;
-            case ',': return 19;
-            case 39: return 20; //Comilla simple
-            case '(': return 21;
-            case ')': return 22;
-            case '{': return 23;
-            case '}': return 24;
-            case 32: return 26; //Espacio en blanco
+            case '\n': return 15; // Salto de linea
+            case ';': return 16;
+            case ':' : return 17;
+            case ',': return 18;
+            case 39: return 19; // Comilla simple
+            case '(': return 20;
+            case ')': return 21;
+            case '{': return 22;
+            case '}': return 23;
+            case 9: return 25; // Tabulación
+            case 32: return 25; // Espacio en blanco
+            case '$': return 26; // EOF o '$' en cadenas y comentarios
         }
-        return 25; //Otros
+        return 24; //Otros
     }
 
-    public Boolean contieneSimbolo(String simbolo) {
-        for (RegistroSimbolo registroSimbolo : this.tablaSimbolos) {
-            if (registroSimbolo.getLexema().equals(simbolo))
+    // Método para verificar que el '$' sea un fin de archivo
+    // Si no está en la posición final del código y no está dentro de un comentario o una cadena, devuelve error
+    public boolean esFinDeArchivo() {
+        if (estadoActual == 0)
+            if (posArchivo == (archivo.length() - 1)) {     // Si es fin de archivo
+                tokenActual = 0;
+                posArchivo = 0;
+                linea = 1;
                 return true;
-        }
-        return false;
-    }
-
-    public RegistroSimbolo getRegistroSimbolo(String simbolo) {
-        for (RegistroSimbolo registroSimbolo : this.tablaSimbolos) {
-            if (registroSimbolo.getLexema().equals(simbolo)) {
-                return registroSimbolo;
             }
-        }
-        return null;
+            else {  // Si reconocí un token y el EOF no aparece al final del código
+                return false;
+            }
+        else
+            return false;
     }
 
-    public void imprimirErrores() {
-        if (this.erroresLexicos.isEmpty())
-            System.out.println("Ejecución sin errores.");
-        else {
-            for (String error : this.erroresLexicos.keySet())
-                if (!error.contains("Warning"))
-                    System.out.println("Error: " + error + " (línea " + this.erroresLexicos.get(error) + ").");
-                else
-                    System.out.println(error + " (línea " + this.erroresLexicos.get(error) + ").");
+
+    // Método para resincronizar el análisis léxico
+    // Si llego a un estado -1, se descarta el buffer, avanzo posArchivo hasta un blanco, una tabulación,
+    // un salto de línea, un ';' o el fin de archivo '$', y vuelvo al estado 0 para seguir detectando tokens
+    public void sincronizarAnalisis(char caracterActual) {
+        String aux = buffer;   // Variable para imprimir el error
+        buffer = "";
+        while (archivo.charAt(posArchivo) != ';' && archivo.charAt(posArchivo) != '\n' && archivo.charAt(posArchivo) != 9
+                && archivo.charAt(posArchivo) != 32 && archivo.charAt(posArchivo) != '$' && posArchivo < archivo.length()) {
+            aux += archivo.charAt(posArchivo);
+            posArchivo++;
         }
+        estadoActual = 0;
+        this.addErrorLexico("ERROR LEXICO (Linea " + linea + "): \'" + aux + "\' es un token invalido");
     }
 
+
+    // Método yylex que devuelve el ID del token procesado para que lo reciba el analizador sintáctico
+    public int yylex() {
+        tokenActual = -1;
+        estadoActual = 0;
+        buffer = "";
+        refTablaSimbolos = -1;
+        char caracterActual;
+        int columnaCaracter;
+        AccionSemantica accion;
+        while ((posArchivo < archivo.length()) && (tokenActual != 0) && (tokenActual == -1)) {
+            caracterActual = archivo.charAt(posArchivo);
+            columnaCaracter = this.getColumnaCaracter(caracterActual);
+            accion = this.matrizAccionesSemanticas.get(estadoActual, columnaCaracter);
+            if (accion != null)
+                accion.ejecutar(buffer, caracterActual);
+            if (caracterActual == '\n' && estadoActual != 6)    // Si es un salto de línea y no estoy dentro de la cadena
+                linea++;
+            if (caracterActual == '$')
+                if (esFinDeArchivo())
+                    break;
+                else {      // Si no cerró la cadena o el comentario, y venía el EOF
+                    if (posArchivo == archivo.length())
+                        if ((estadoActual == 6 || estadoActual == 8 || estadoActual == 9)) {
+                            this.addErrorLexico("ERROR LEXICO (Linea " + linea + "): cadena o comentario mal cerrados");
+                            tokenActual = 0;
+                            posArchivo = 0;
+                            linea = 1;
+                            break;
+                        }
+                }
+            estadoActual = this.matrizEstados.get(estadoActual, columnaCaracter);
+
+            if (estadoActual == -1)
+                sincronizarAnalisis(caracterActual);
+
+        }
+
+        if (tokenActual != 0 && tokenActual != -1) {
+            String tipo = getTipoToken(tokenActual);
+            Token nuevo = new Token(tokenActual, buffer, linea, tipo);
+            this.addToken(nuevo);
+        }
+
+        return tokenActual;
+    }
+
+    // Método para imprimir la tabla de símbolos
     public void imprimirTablaSimbolos() {
         if (this.tablaSimbolos.isEmpty())
             System.out.println("Tabla de símbolos vacía");
@@ -507,12 +485,14 @@ public class AnalizadorLexico {
         }
     }
 
-    public Token getToken() {
-        if (contadorToken < tokens.size()) {
-            Token retorno = this.tokens.elementAt(this.contadorToken);
-            this.contadorToken++;
-            return retorno;
+    // Método para mostrar los errores léxicos producidos durante la ejecución
+    public void imprimirErrores() {
+        if (this.listaErrores.isEmpty())
+            System.out.println("Ejecución sin errores");
+        else {
+            for (int i = 0; i < this.listaErrores.size(); i++)
+                System.out.println(this.listaErrores.get(i));
         }
-        return null;
     }
+
 }

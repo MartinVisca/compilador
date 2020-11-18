@@ -11,4 +11,3 @@ ELSE {
 	resultado = 2_l;
 }
 END_IF;$
-

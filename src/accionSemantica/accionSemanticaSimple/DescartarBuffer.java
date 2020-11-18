@@ -10,9 +10,10 @@ public class DescartarBuffer extends AccionSemanticaSimple {
 
     @Override
     public boolean ejecutar(String buffer, char caracter) {
+        // Seteamos el buffer en vacío
         this.getAnalizadorLexico().setBuffer("");
-        this.getAnalizadorLexico().setDescartoBuffer(true);
-        return true;
+        // Devolvemos false para que pueda realizar la siguiente acción
+        return false;
     }
 
 }

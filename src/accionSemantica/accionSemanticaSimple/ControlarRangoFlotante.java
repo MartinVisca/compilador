@@ -5,61 +5,38 @@ import analizadorLexico.AnalizadorLexico;
 @SuppressWarnings("all")
 public class ControlarRangoFlotante extends AccionSemanticaSimple {
 
-    private static final float MINIMO_RANGO_NEGATIVO = -3.40282347f;
-    private static final float MAXIMO_RANGO_NEGATIVO = -1.17549435f;
-    private static final float MINIMO_RANGO_POSITIVO = 1.17549435f;
-    private static final float MAXIMO_RANGO_POSITIVO = 3.40282347f;
-    private static final float RANGO_CERO = 0.0f;
+    public static final float MINIMO_FLOAT = 1.17549435E-38f;
+    public static final float MAXIMO_FLOAT = 3.40282347E+38f;
 
     public ControlarRangoFlotante(AnalizadorLexico analizadorLexico) {
         super(analizadorLexico);
     }
 
-    public static float getMaximoRangoNegativo() {
-        return MAXIMO_RANGO_NEGATIVO;
-    }
+    // Para parsear el buffer a un float
+    public static Float stringAFloat(String cadena) { return Float.parseFloat(cadena.replace('f', 'E')); }
 
-    public static float getMaximoRangoPositivo() {
-        return MAXIMO_RANGO_POSITIVO;
-    }
-
-    public static float getMinimoRangoNegativo() {
-        return MINIMO_RANGO_NEGATIVO;
-    }
-
-    public static float getMinimoRangoPositivo() {
-        return MINIMO_RANGO_POSITIVO;
-    }
-
-    public static float getRangoCero() {
-        return RANGO_CERO;
+    // Verifica si el float está en rango
+    public static boolean enRango(String cadena) {
+        float numero = stringAFloat(cadena);
+        if (cadena.equals("0.0") || cadena.equals("0.") || cadena.equals(".0"))
+            return true;
+        return MINIMO_FLOAT < numero && numero < MAXIMO_FLOAT;
     }
 
     @Override
     public boolean ejecutar(String buffer, char caracter) {
-        float numero = 0.0f;
-        String error = "";
-        int linea = 0;
 
-        if (buffer.charAt(buffer.length() - 1) != '.')
-            numero = Float.parseFloat(buffer);
-        else {
-            error = "El flotante está mal definido.";
-            linea = this.getAnalizadorLexico().getLinea();
-            this.getAnalizadorLexico().addErrorLexico(error, linea);
+        // Si no está en rango
+        if (!enRango(buffer)) {
+            this.getAnalizadorLexico().addErrorLexico("ERROR LEXICO (Linea " + AnalizadorLexico.linea + "): la constante FLOAT está fuera de rango.");
             return false;
         }
-
-        if ((numero < this.MAXIMO_RANGO_NEGATIVO && numero > this.MINIMO_RANGO_NEGATIVO) ||
-            (numero < this.MAXIMO_RANGO_POSITIVO && numero > this.MINIMO_RANGO_POSITIVO) ||
-            (numero == this.RANGO_CERO))
+        else {  // Si está en rango
+            this.getAnalizadorLexico().agregarTokenATablaSimbolos(buffer, "FLOAT");
+            this.getAnalizadorLexico().setTokenActual(this.getAnalizadorLexico().getIdToken("CTE"));
             return true;
-        else {
-            error = "El flotante indicado no está dentro del rango permitido.";
-            linea = this.getAnalizadorLexico().getLinea();
-            this.getAnalizadorLexico().addErrorLexico(error, linea);
-            return false;
         }
+
     }
 
 }

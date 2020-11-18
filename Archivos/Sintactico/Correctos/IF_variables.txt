@@ -8,4 +8,3 @@ ELSE {
 	resultado = b;
 }
 END_IF;$
-

@@ -62,26 +62,13 @@ declaracion_proc : PROC ID  {   lexico.modificarUsoTablaSimb($2.ival, "PROC");
                                  }
 
                             }
-                 | PROC '(' error '{' { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea");
+                 | PROC '(' error '{' { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta el identificador del procedimiento");
                                         Main.errorProc = true;
                                       }
-                 | PROC ID control_niveles
+                 | PROC ID control_invocaciones
                  ;
 
-declaracion_metodo : encabezado_metodo cuerpo_metodo';'
-                   ;
-
-encabezado_metodo : tipo_resultado declarador_metodo
-                  ;
-
-cuerpo_metodo : '{' bloque '}'
-
-tipo_resultado : PROC
-               ;
-
-declarador_metodo : ID '(' lista_parametros_formales ')' NI '=' CTE
-                  | ID '(' ')' NI '=' CTE
-                  ;
+control_invocaciones : NI '=' CTE '{'   {  }
 
 lista_parametros_formales : tipo ID
                           | REF tipo ID
@@ -189,5 +176,30 @@ private int yylex() {
 private void yyerror(String string) {
 	System.out.println(string);
 }
+
+boolean verificarRedeclaracionVariable(int referenciaATS) {
+
+}
+	Set<Integer> integers = Main.tablaSimbolos.keySet();
+	String ida = Main.tablaSimbolos.get(ref)[0];
+	for (int i : integers)
+	    if (Main.tablaSimbolos.get(i)[0].equals(ida) && i != ref){
+
+	    	if (Main.tablaSimbolos.get(i)[2].equals(Main.tablaSimbolos.get(ref)[2]))
+	    		if (Main.tablaSimbolos.get(i)[2].equals("VARIABLE"))
+	    			Main.agregarErrores("ERROR() linea " + Main.contadorLineas + ": redeclaracion de variable.");
+	    		else
+	    			Main.agregarErrores("ERROR() linea " + Main.contadorLineas + ": redeclaracion de procedimiento.");
+	    	else
+	    		if (Main.tablaSimbolos.get(i)[2].equals("VARIABLE"))
+	    			Main.agregarErrores("ERROR() linea " + Main.contadorLineas + ": redeclaracion de variable como un procedimiento.");
+	    		else
+	    			Main.agregarErrores("ERROR() linea " + Main.contadorLineas + ": redeclaracion de procedimiento como una variable.");
+
+	    	Main.tablaSimbolos.remove(ref);
+		return true;
+	    }
+	return false;
+
 
 

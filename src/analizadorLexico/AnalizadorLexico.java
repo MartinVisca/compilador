@@ -255,10 +255,8 @@ public class AnalizadorLexico {
     // Método para obtener un token de la tabla de símbolos dado su indice. Se usa en el análisis sintáctico
     public RegistroSimbolo getElemTablaSimb(int indice) { return this.tablaSimbolos.get(indice); }
 
-    //
-    public void modificarUsoElemTablaSimb(int indice) {
-
-    }
+    // Modifica el atributo uso de una determinada entrada de la tabla de símbolos. Se usa en el análisis sintáctico
+    public void modificarUsoElemTablaSimb(int indice, String uso) { this.tablaSimbolos.get(indice).setUso(uso); }
 
     // Método para agregar errores léxicos
     public void addErrorLexico(String error) { this.listaErrores.add(error); }

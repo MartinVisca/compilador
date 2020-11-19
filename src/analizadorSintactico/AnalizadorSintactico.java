@@ -16,6 +16,7 @@ public class AnalizadorSintactico {
     Vector<String> analisisSintactico;      // Contiene las detecciones correctas de reglas de la gramática
     Vector<String> listaErrores;        // Estructura que guarda los errores sintácticos
     private PolacaInversa polaca;       // Estructura de polaca inversa que servirá para poder generar el código assembler
+    Vector<RegistroSimbolo> tablaSimbolos;
 
 
     public AnalizadorSintactico(AnalizadorLexico lexico, Parser parser) {
@@ -25,6 +26,7 @@ public class AnalizadorSintactico {
         this.parser.setAnalizadorSintactico(this);
         this.listaErrores = new Vector<>();
         this.polaca = new PolacaInversa();
+        this.tablaSimbolos = lexico.getTablaSimbolos();
     }
 
     public boolean getErrorProc() { return errorProc; }
@@ -37,9 +39,21 @@ public class AnalizadorSintactico {
 
     public void agregarAPolaca(String elemento) { this.polaca.addElemento(elemento); }
 
+    public void imprimirTablaSimbolos() {
+        if (this.tablaSimbolos.isEmpty())
+            System.out.println("Tabla de símbolos vacía");
+        else {
+            for (RegistroSimbolo simbolo : this.tablaSimbolos)
+                System.out.println("Tipo del simbolo: " + simbolo.getTipoToken() + " - Lexema: " + simbolo.getLexema());
+        }
+    }
+
     public void start() {
-        if (parser.yyparse() == 0)
+        if (parser.yyparse() == 0) {
             System.out.println("Parser finalizo");
+            imprimirTablaSimbolos();
+        }
+
         else
             System.out.println("Parser no finalizo");
         lexico.setPosArchivo(0);

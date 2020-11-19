@@ -15,20 +15,58 @@ import analizadorLexico.Token;
 
 %%
 
-programa : bloque
+programa : bloque   { sintactico.agregarAnalisis("Se reconocio un programa. (Linea " + AnalizadorLexico.linea + ")"); }
          ;
 
 bloque : sentencias
-       | bloque sentencias
+       | sentencias bloque
        ;
+
+bloque_sentencias : '{' bloque '}'
+                  | sentencias
+                  ;
 
 sentencias : sentencias_declarativas
            | sentencias_ejecutables
            ;
 
-sentencias_declarativas : declaracion_metodo
-                        | declaracion_variable
+sentencias_declarativas : tipo lista_variables';' { sintactico.agregarAnalisis("Se reconocio una declaracion de variable. (Linea " + AnalizadorLexico.linea + ")"); }
+                        | tipo ';'  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): no se declaro un identificador para la variable.") }
+                        | ID error ';' {    // Tratamiento de errores para declaracion de variables
+                                            RegistroSimbolo aux = lexico.getElemTablaSimb($1.ival);
+                                            if (!aux.getUso().equals("PROC"))
+                                                sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): no se declaro el tipo de la variable.");
+                                       }
+                        | declaracion_proc bloque '}'   { if (!sintactico.getErrorProc()) {
+                                                               sintactico.agregarAnalisis("Se reconocio una declaracion de procedimiento. (Linea " + AnalizadorLexico.linea + ")");
+                                                               // Agregar polaca
+                                                               // Actualizar ambito
+                                                          }
+                                                          else {
+                                                               sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): declaracion de procedimiento invalida.");
+                                                               sintactico.setErrorProc(true);
+                                                          }
+                                                        }
+                        | declaracion_proc '}'  { sintactico.addErrorSintactico("WARNING (Linea " + AnalizadorLexico.linea "): el cuerpo del procedimiento es vacio.") }
                         ;
+
+declaracion_proc : PROC ID  {   lexico.modificarUsoTablaSimb($2.ival, "PROC");
+                                RegistroSimbolo aux = lexico.getElemTablaSimb($2.ival);
+                                String nombre_procedimiento = aux.getLexema();
+                                Main.tablaSimbolos.get($2.ival)[0] += "/" + Main.ambito;
+                                if(variable_redeclarada($2.ival))
+                                   Main.errorProc = true;
+                                else {
+                                   Main.referenciaParametro = $2.ival;
+                                   Main.ambito += "/" + name_proc;
+                                 }
+
+                            }
+                 | PROC '(' error '{' { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea");
+                                        Main.errorProc = true;
+                                      }
+                 | PROC ID control_niveles
+                 ;
 
 declaracion_metodo : encabezado_metodo cuerpo_metodo';'
                    ;
@@ -134,20 +172,18 @@ tipo : LONGINT
 
 %%
 
-private AnalizadorLexico analizadorLexico;
-private Token token;
+private AnalizadorLexico lexico;
+private AnalizadorSintactico sintactico;
 
-public Parser(AnalizadorLexico lexico) {
-    this.analizadorLexico = lexico;
-}
+public void setLexico(AnalizadorLexico lexico) { this.lexico = lexico; }
+
+public void setSintactico(AnalizadorSintactico sintactico) { this.sintactico = sintactico }
 
 private int yylex() {
-    this.token = this.analizadorLexico.getToken();
-    if (this.token != null) {
-        yylval = new ParserVal(this.token.getLexema());
-        return this.token.getId();
-    }
-    return 0;
+    token = lexico.yylex();
+    if (lexico.getRefTablaSimbolos() != -1)
+        yyval = new ParserVal(lexico.getRefTablaSimbolos());
+    return token;
 }
 
 private void yyerror(String string) {

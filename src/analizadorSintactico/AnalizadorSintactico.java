@@ -1,19 +1,49 @@
 package analizadorSintactico;
 
 import analizadorLexico.AnalizadorLexico;
+import analizadorLexico.RegistroSimbolo;
+
 import java.util.Vector;
 
 public class AnalizadorSintactico {
 
-    private AnalizadorLexico lexico;
-    //private Parser parser;
-    Vector<String> analisisSintactico;
+    // Variables
+    private boolean errorProc = false;  // Variable para determinar si se produjo un error cuando se declara un PROC
 
-    private AnalizadorSintactico(AnalizadorLexico lexico) { // TODO: 17/11/2020 agregar Parser al constructor
+    // Estructuras
+    private AnalizadorLexico lexico;    // Se utiliza para obtener los tokens y poder verificar la sintaxis del codigo
+    private Parser parser;      // Clase Parser generada por la herramienta yacc
+    Vector<String> analisisSintactico;      // Contiene las detecciones correctas de reglas de la gramática
+    Vector<String> listaErrores;        // Estructura que guarda los errores sintácticos
+    private PolacaInversa polaca;       // Estructura de polaca inversa que servirá para poder generar el código assembler
+
+
+    public AnalizadorSintactico(AnalizadorLexico lexico, Parser parser) {
         this.lexico = lexico;
-        // this.parser = parser;
+        this.parser = parser;
+        this.parser.setAnalizadorLexico(this.lexico);
+        this.parser.setAnalizadorSintactico(this);
+        this.listaErrores = new Vector<>();
+        this.polaca = new PolacaInversa();
     }
 
+    public boolean getErrorProc() { return errorProc; }
+
+    public void setErrorProc(boolean errorProc) { this.errorProc = errorProc; }
+
     public void agregarAnalisis(String analisis) { this.analisisSintactico.add(analisis); }
+
+    public void addErrorSintactico(String error) { this.listaErrores.add(error); }
+
+    public void agregarAPolaca(String elemento) { this.polaca.addElemento(elemento); }
+
+    public void start() {
+        if (parser.yyparse() == 0)
+            System.out.println("Parser finalizo");
+        else
+            System.out.println("Parser no finalizo");
+        lexico.setPosArchivo(0);
+        lexico.setBuffer("");
+    }
 
 }

@@ -19,6 +19,7 @@ public class AnalizadorLexico {
     private int estadoActual = 0;       // Estado del autómata en el que me encuentro actualmente
     private int tokenActual = -1;        // ID Token que se está procesando actualmente
     private int refTablaSimbolos = -1;      // Número que indica el índice del token en la tabla de símbolos. Sirve para asignarselo al yylval en el Parser
+    private boolean codigoLeido = false;        // Variable para verificar si se terminó de leer el código
     public static int linea = 1;    // Referencia a la línea de código. Comienza en 1
 
     // Estructuras
@@ -209,6 +210,10 @@ public class AnalizadorLexico {
 
     public void setRefTablaSimbolos(int refTablaSimbolos) { this.refTablaSimbolos = refTablaSimbolos; }
 
+    public boolean isCodigoLeido() { return codigoLeido; }
+
+    public void setCodigoLeido(boolean codigoLeido) { this.codigoLeido = codigoLeido; }
+
     public Vector<RegistroSimbolo> getTablaSimbolos() {
         return tablaSimbolos;
     }
@@ -245,6 +250,14 @@ public class AnalizadorLexico {
                 return i;
         }
         return -1;
+    }
+
+    // Método para obtener un token de la tabla de símbolos dado su indice. Se usa en el análisis sintáctico
+    public RegistroSimbolo getElemTablaSimb(int indice) { return this.tablaSimbolos.get(indice); }
+
+    //
+    public void modificarUsoElemTablaSimb(int indice) {
+
     }
 
     // Método para agregar errores léxicos
@@ -403,6 +416,7 @@ public class AnalizadorLexico {
                 tokenActual = 0;
                 posArchivo = 0;
                 linea = 1;
+                codigoLeido = true;
                 return true;
             }
             else {  // Si reconocí un token y el EOF no aparece al final del código
@@ -411,7 +425,6 @@ public class AnalizadorLexico {
         else
             return false;
     }
-
 
     // Método para resincronizar el análisis léxico
     // Si llego a un estado -1, se descarta el buffer, avanzo posArchivo hasta un blanco, una tabulación,
@@ -427,7 +440,6 @@ public class AnalizadorLexico {
         estadoActual = 0;
         this.addErrorLexico("ERROR LEXICO (Linea " + linea + "): \'" + aux + "\' es un token invalido");
     }
-
 
     // Método yylex que devuelve el ID del token procesado para que lo reciba el analizador sintáctico
     public int yylex() {
@@ -456,6 +468,7 @@ public class AnalizadorLexico {
                             tokenActual = 0;
                             posArchivo = 0;
                             linea = 1;
+                            codigoLeido = true;
                             break;
                         }
                 }
@@ -471,6 +484,10 @@ public class AnalizadorLexico {
             Token nuevo = new Token(tokenActual, buffer, linea, tipo);
             this.addToken(nuevo);
         }
+
+        if (posArchivo == archivo.length() && archivo.charAt(archivo.length()-1) != '$')
+            codigoLeido = true;
+
 
         return tokenActual;
     }

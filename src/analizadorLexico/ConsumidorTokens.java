@@ -18,14 +18,13 @@ public class ConsumidorTokens {
             String entrada = Files.readString(Paths.get(path));
 
             AnalizadorLexico analizadorLexico = new AnalizadorLexico(entrada);
-            Vector<Token> tokens = analizadorLexico.getTokens();
+            while (analizadorLexico.isCodigoLeido() == false)
+                analizadorLexico.yylex();
+            Vector<Token> tokens = analizadorLexico.getListaTokens();
             for (Token token : tokens) {
                 System.out.println("----------------");
                 System.out.println("Tipo token: " + token.getTipo());
                 System.out.println("Lexema: " + token.getLexema());
-                RegistroSimbolo registroSimbolo = token.getRegistro();
-                if (registroSimbolo != null)
-                    System.out.println("Apunta a lexema: " + registroSimbolo.getLexema());
             }
 
             System.out.println("----------------");

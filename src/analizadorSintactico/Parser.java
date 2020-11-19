@@ -429,20 +429,18 @@ final static String yyrule[] = {
 };
 
 
-private AnalizadorLexico analizadorLexico;
-private Token token;
+private AnalizadorLexico lexico;
+private AnalizadorSintactico sintactico;
 
-public Parser(AnalizadorLexico lexico) {
-    this.analizadorLexico = lexico;
-}
+public void setAnalizadorLexico(AnalizadorLexico lexico) { this.lexico = lexico; }
+
+public void setAnalizadorSintactico(AnalizadorSintactico sintactico) { this.sintactico = sintactico; }
 
 private int yylex() {
-    this.token = this.analizadorLexico.getToken();
-    if (this.token != null) {
-        yylval = new ParserVal(this.token.getLexema());
-        return this.token.getId();
-    }
-    return 0;
+    int token = lexico.yylex();
+    if (lexico.getRefTablaSimbolos() != -1)
+      yyval = new ParserVal(lexico.getRefTablaSimbolos());
+    return token;
 }
 
 private void yyerror(String string) {

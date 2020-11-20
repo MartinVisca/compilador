@@ -6,7 +6,6 @@ import analizadorLexico.AnalizadorLexico;
 import analizadorLexico.RegistroSimbolo;
 import analizadorLexico.Token;
 
-import javax.naming.ldap.Control;
 import java.util.Vector;
 
 public class AnalizadorSintactico {
@@ -155,11 +154,8 @@ public class AnalizadorSintactico {
     }
 
     public void start() {
-        // parser.setLexico(this.lexico);
-        // parser.setSintactico(this);
         if (parser.yyparse() == 0) {
             System.out.println("Parser finalizo");
-            imprimirAnalisisLexico();
             imprimirAnalisisSintactico();
             imprimirTablaSimbolos();
         }

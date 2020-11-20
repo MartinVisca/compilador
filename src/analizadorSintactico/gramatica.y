@@ -133,6 +133,12 @@ sentencia_if : IF '(' condicion ')' bloque_sentencias END_IF    { sintactico.agr
              | IF '(' ')'  error  END_IF     { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta la condicion del IF."); }
              ;
 
+cuerpo_if | bloque_sentencias
+          ;
+
+cuerpo_else | bloque_sentencias
+            ;
+
 sentencia_for : FOR '(' ID '=' CTE ';'
                 condicion_for ';' incr_decr CTE ')'     { sintactico.agregarAnalisis("Se reconocio una declaracion de FOR. (Linea " + AnalizadorLexico.linea + ")"); }
                 bloque_sentencias_ejecutables       { sintactico.agregarAnalisis("Se reconocio un bloque de sentencias solo ejecutables. (Linea " + AnalizadorLexico.linea + ")"); }

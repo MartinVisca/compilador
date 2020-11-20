@@ -6,12 +6,14 @@ import analizadorLexico.AnalizadorLexico;
 import analizadorLexico.RegistroSimbolo;
 import analizadorLexico.Token;
 
+import java.util.Stack;
 import java.util.Vector;
 
 public class AnalizadorSintactico {
 
     // Variables
     private boolean errorProc = false;  // Variable para determinar si se produjo un error cuando se declara un PROC
+    private String ambito = "main";     // Ambito principal del programa
 
     // Estructuras
     private AnalizadorLexico lexico;    // Se utiliza para obtener los tokens y poder verificar la sintaxis del codigo
@@ -19,7 +21,8 @@ public class AnalizadorSintactico {
     Vector<String> analisisSintactico;      // Contiene las detecciones correctas de reglas de la gramática
     Vector<String> listaErrores;        // Estructura que guarda los errores sintácticos
     private PolacaInversa polaca;       // Estructura de polaca inversa que servirá para poder generar el código assembler
-    Vector<RegistroSimbolo> tablaSimbolos;
+    private Stack<Integer> pila;        // Pila para guardar los estados de la polaca inversa
+    Vector<RegistroSimbolo> tablaSimbolos;      // Tabla de símbolos
 
 
     public AnalizadorSintactico(AnalizadorLexico lexico, Parser parser) {
@@ -30,6 +33,7 @@ public class AnalizadorSintactico {
         this.analisisSintactico = new Vector<>();
         this.listaErrores = new Vector<>();
         this.polaca = new PolacaInversa();
+        this.pila = new Stack<>();
         this.tablaSimbolos = lexico.getTablaSimbolos();
     }
 
@@ -41,7 +45,20 @@ public class AnalizadorSintactico {
 
     public void addErrorSintactico(String error) { this.listaErrores.add(error); }
 
+    // Método para agregar a la polaca inversa
     public void agregarAPolaca(String elemento) { this.polaca.addElemento(elemento); }
+
+    // Método para agregar a la polaca inversa, en una posicion dada
+    public void agregarAPolacaEnPos(int posicion, String elemento) { this.polaca.addElementoEnPosicion(elemento, posicion); }
+
+    // Obtener el tamaño del arreglo de polaca inversa
+    public int getSizePolaca() { return this.polaca.getSize(); }
+
+    // Apila un elemento
+    public void pushElementoPila(int valor) { this.pila.push(valor); }
+
+    // Devuelve el elemento más alto de la pila
+    public int popElementoPila() { return this.pila.pop(); }
 
     // Método para obtener el lexema de un token almacenado en la tabla de símbolos, dado su índice
     public String getLexemaElemTablaSimb(int indice) { return this.tablaSimbolos.get(indice).getLexema(); }
@@ -153,6 +170,14 @@ public class AnalizadorSintactico {
             System.out.println("Analisis sintactico vacio.");
     }
 
+    public void imprimirPolaca() {
+        System.out.println("----------POLACA INVERSA-----------");
+        if (!polaca.esVacia())
+            polaca.imprimirPolaca();
+        else
+            System.out.println("Polaca vacia");
+    }
+
     public void start() {
         if (parser.yyparse() == 0) {
             System.out.println("Parser finalizo");
@@ -161,6 +186,7 @@ public class AnalizadorSintactico {
         }
         else
             System.out.println("Parser no finalizo");
+        imprimirPolaca();
         imprimirErroresSintacticos();
         lexico.setPosArchivo(0);
         lexico.setBuffer("");

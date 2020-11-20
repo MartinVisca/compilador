@@ -20,11 +20,20 @@ public class PolacaInversa {
     }
 
     public void addElementoEnPosicion(String elemento, int posicion) {
-        this.estructuraPolaca.add(posicion, elemento);
+        this.estructuraPolaca.set(posicion, elemento);
     }
 
     public void vaciarPolaca() {
         this.estructuraPolaca.removeAllElements();
+    }
+
+    public int getSize() { return this.estructuraPolaca.size(); }
+
+    public boolean esVacia() { return this.estructuraPolaca.isEmpty(); }
+
+    public void imprimirPolaca () {
+        for (String string : this.estructuraPolaca)
+            System.out.println(string);
     }
 
 }

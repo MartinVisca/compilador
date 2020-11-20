@@ -119,24 +119,28 @@ lista_variables : ID
                 | tipo error    { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): el tipo de la variable ya fue definido."); }
                 ;
 
-sentencias_ejecutables : sentencia_if
-                       | sentencia_for
-                       | asignacion
+sentencias_ejecutables : asignacion
                        | salida
                        | invocacion_proc
+                       | sentencia_if
+                       | sentencia_for
                        ;
 
-sentencia_if : IF '(' condicion ')' bloque_sentencias END_IF    { sintactico.agregarAnalisis("Se reconocio una sentencia IF. (Linea " + AnalizadorLexico.linea + ")"); }
-             | IF '(' condicion ')' bloque_sentencias ELSE bloque_sentencias END_IF     { sintactico.agregarAnalisis("Se reconocio una sentencia IF ELSE. (Linea " + AnalizadorLexico.linea + ")"); }
-             | IF '(' condicion ')' bloque_sentencias ELSE error END_IF     { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en el cuerpo del ELSE."); }
+sentencia_if : IF '(' condicion ')' cuerpo_else END_IF    { sintactico.agregarAnalisis("Se reconocio una sentencia IF ELSE. (Linea " + AnalizadorLexico.linea + ")"); }
+             | IF '(' condicion ')' cuerpo_if ELSE cuerpo_else END_IF     { sintactico.agregarAnalisis("Se reconocio una sentencia IF. (Linea " + AnalizadorLexico.linea + ")"); }
+             | IF '(' condicion ')' cuerpo_else ELSE error END_IF     { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en el cuerpo del ELSE."); }
              | IF condicion THEN error END_IF   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): faltan los parentesis en la condicion del IF."); }
              | IF '(' ')'  error  END_IF     { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta la condicion del IF."); }
              ;
 
-cuerpo_if | bloque_sentencias
+cuerpo_if | bloque_sentencias { sintactico.agregarAPolacaEnPos(sintactico.popElementoPila(), "[" + (sintactico.getSizePolaca() + 2) + "]");
+                                sintactico.agregarAPolaca(" ");
+                                sintactico.pushElementoPila(sintactico.getSizePolaca() - 1);
+                                sintactico.agregarAPolaca("BI");
+                              }
           ;
 
-cuerpo_else | bloque_sentencias
+cuerpo_else | bloque_sentencias     { sintactico.agregarAPolacaEnPos(sintactico.popElementoPila(), "[" + sintactico.getSizePolaca() + "]"); }
             ;
 
 sentencia_for : FOR '(' ID '=' CTE ';'
@@ -146,7 +150,11 @@ sentencia_for : FOR '(' ID '=' CTE ';'
 
 condicion_for : ID comparador expresion     { sintactico.agregarAnalisis("Se reconocio la condicion de corte del FOR. (Linea " + AnalizadorLexico.linea + ")"); }
 
-condicion : expresion comparador expresion
+condicion : expresion comparador expresion { sintactico.agregarAPolaca($2.sval);
+                                             sintactico.agregarAPolaca(" ");
+                                             sintactico.pushElementoPila(sintactico.getSizePolaca() - 1);
+                                             sintactico.agregarAPolaca("BF");
+                                           }
           | error   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): condicion invalida."); }
           ;
 
@@ -200,12 +208,12 @@ factor : ID
                     }
        ;
 
-comparador : '<'
-           | '>'
-           | MENORIGUAL
-           | MAYORIGUAL
-           | IGUAL
-           | DISTINTO
+comparador : '<'    { $$.sval = new String("<"); }
+           | '>'    { $$.sval = new String(">"); }
+           | MENORIGUAL     { $$.sval = new String("<="); }
+           | MAYORIGUAL     { $$.sval = new String(">="); }
+           | IGUAL      { $$.sval = new String("=="); }
+           | DISTINTO   { $$.sval = new String("!="); }
            ;
 
 incr_decr : UP

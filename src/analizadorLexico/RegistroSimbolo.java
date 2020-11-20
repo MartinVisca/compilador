@@ -8,7 +8,6 @@ public class RegistroSimbolo {
     private String lexema;
     private String tipoToken;
     private String uso; //Uso que se le da a la variable o símbolo
-    private String tipoIdCte; //Tipo de la constante o variable en cuestión
     private String ambito; //Lugar de definición de la variable, siguiendo Name Mangling
     private int invocacionesPermitidas; //Cantidad de invocaciones que se permiten para un símbolo determinado
     private String tipoPasaje; //Sólo para parámetros; indica si es pasado por referencia o por copia-valor
@@ -23,7 +22,6 @@ public class RegistroSimbolo {
         this.lexema = lexema;
         this.tipoToken = tipoToken;
         this.uso = "";
-        this.tipoIdCte = "";
         this.ambito = "";
         this.invocacionesPermitidas = INVOCACIONES_PERMITIDAS_POR_DEFECTO; //Por defecto se setea el número más alto de invocaciones, indicando que no hay un límite definido
         this.tipoPasaje = "";
@@ -51,14 +49,6 @@ public class RegistroSimbolo {
 
     public void setUso(String uso) {
         this.uso = uso;
-    }
-
-    public String getTipoIdCte() {
-        return tipoIdCte;
-    }
-
-    public void setTipoIdCte(String tipoIdCte) {
-        this.tipoIdCte = tipoIdCte;
     }
 
     public String getAmbito() {
@@ -97,7 +87,7 @@ public class RegistroSimbolo {
     @Override
     public boolean equals(Object otroRegistroSimbolo) {
         RegistroSimbolo registro = (RegistroSimbolo) otroRegistroSimbolo;
-        return (this.getLexema().equals(registro.getLexema()) && this.getTipoToken().equals(registro.getTipoToken()) && this.getUso().equals(((RegistroSimbolo) otroRegistroSimbolo).getUso()) && this.getTipoIdCte().equals(((RegistroSimbolo) otroRegistroSimbolo).getTipoIdCte()));
+        return (this.getLexema().equals(registro.getLexema()) && this.getTipoToken().equals(registro.getTipoToken()) && this.getUso().equals(((RegistroSimbolo) otroRegistroSimbolo).getUso()) );
     }
 
     @Override

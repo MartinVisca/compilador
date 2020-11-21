@@ -499,8 +499,13 @@ public class AnalizadorLexico {
 
     // Método para mostrar los errores léxicos producidos durante la ejecución
     public void imprimirErrores() {
-        if (this.listaErrores.isEmpty())
+        System.out.println("\n");
+        System.out.println("---------------------");
+        System.out.println(" ERRORES LEXICOS");
+        if (this.listaErrores.isEmpty()) {
+            System.out.println("---------------------");
             System.out.println("Ejecución sin errores");
+        }
         else {
             for (int i = 0; i < this.listaErrores.size(); i++)
                 System.out.println(this.listaErrores.get(i));

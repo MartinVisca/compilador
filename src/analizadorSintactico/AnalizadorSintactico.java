@@ -124,8 +124,9 @@ public class AnalizadorSintactico {
 
     // Método para imprimir los errores sintácticos
     public void imprimirErroresSintacticos() {
+        System.out.println("\n");
         System.out.println("---------------------");
-        System.out.println("----- ERRORES SINTACTICOS -----");
+        System.out.println(" ERRORES SINTACTICOS");
         if (this.listaErrores.isEmpty()) {
             System.out.println("---------------------");
             System.out.println("Ejecución sin errores");
@@ -150,6 +151,7 @@ public class AnalizadorSintactico {
 
     // Método para imprimir el análisis sintáctico
     public void imprimirAnalisisSintactico() {
+        System.out.println("\n");
         System.out.println("----------ANALISIS SINTACTICO-----------");
         if (!analisisSintactico.isEmpty())
             for (String string : analisisSintactico)
@@ -163,11 +165,13 @@ public class AnalizadorSintactico {
         // parser.setSintactico(this);
         if (parser.yyparse() == 0) {
             System.out.println("Parser finalizo");
+            imprimirAnalisisLexico();
             imprimirAnalisisSintactico();
             imprimirTablaSimbolos();
         }
         else
             System.out.println("Parser no finalizo");
+        lexico.imprimirErrores();
         imprimirErroresSintacticos();
         lexico.setPosArchivo(0);
         lexico.setBuffer("");

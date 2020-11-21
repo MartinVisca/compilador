@@ -152,14 +152,14 @@ condicion : expresion comparador expresion
           ;
 
 asignacion : ID '=' expresion ';'   { sintactico.agregarAnalisis("Se reconocio una asignacion. (Linea " + AnalizadorLexico.linea + ")");
-                                      sintactico.agregarAPolaca(sintactico.getElemTablaSimb($1.ival));
+                                      sintactico.agregarAPolaca(sintactico.getLexemaFromTS($1.ival));
                                       sintactico.agregarAPolaca("=");}
            | ID '=' expresion error { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta ';' al final de la asignacion."); }
            | ID expresion error { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta operador '=' en la asignacion."); }
            | ID '=' error   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta expresion en la asignacion."); }
            ;
 
-salida : OUT '(' CADENA ')' ';'    { sintactico.agregarAnalisis("Se reconocio una salida por pantalla. (Linea " + AnalizadorLexico.linea + ")");sintactico.agregarAPolaca($3.ival) sintactico.agregarAPolaca("OUT")}
+salida : OUT '(' CADENA ')' ';'    { sintactico.agregarAnalisis("Se reconocio una salida por pantalla. (Linea " + AnalizadorLexico.linea + ")");sintactico.agregarAPolaca(sintactico.getLexemaFromTS($3.ival)); sintactico.agregarAPolaca("OUT"); }
        | OUT '(' CADENA error ';'   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta ')' en la declaracion de la salida por pantalla."); }
        | OUT CADENA error ';'     { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta '(' en la declaracion de la salida por pantalla."); }
        | '(' CADENA error ';'    {sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): se esperaba OUT, se encontro '('."); }
@@ -196,13 +196,13 @@ termino : termino '*' factor    { sintactico.agregarAnalisis("Se reconocio una m
 
 factor : ID
        | CTE    {
-                    String tipo = sintactico.getTipoElemTablaSimb($1.ival);
+                    String tipo = sintactico.getTipoFromTS($1.ival);
                     if (tipo.equals("LONGINT"))
                         sintactico.verificarRangoEnteroLargo($1.ival);
-                    sintactico.agregarAPolaca(sintactico.getLexemaElemTablaSimb($1.ival));
+                    sintactico.agregarAPolaca(sintactico.getLexemaFromTS($1.ival));
                 }
        | '-' CTE    {
-                        String tipo = sintactico.getTipoElemTablaSimb($2.ival);
+                        String tipo = sintactico.getTipoFromTS($2.ival);
                         if (tipo.equals("FLOAT"))
                             sintactico.verificarRangoFloat($2.ival);
                     }
@@ -216,12 +216,12 @@ comparador : '<'    { $$.sval = new String("<"); }
            | DISTINTO   { $$.sval = new String("!="); }
            ;
 
-incr_decr : UP   {$$.sval = new String("UP")}
-          | DOWN {$$.sval = new String("DOWN")}
+incr_decr : UP   {$$.sval = new String("UP");}
+          | DOWN {$$.sval = new String("DOWN");}
           ;
 
-tipo : LONGINT {$$.sval = new String("LONGINT")}
-     | FLOAT {$$.sval = new String("FLOAT")}
+tipo : LONGINT {$$.sval = new String("LONGINT");}
+     | FLOAT {$$.sval = new String("FLOAT");}
      ;
 
 %%

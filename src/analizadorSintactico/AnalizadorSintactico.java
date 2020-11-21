@@ -7,6 +7,7 @@ import analizadorLexico.RegistroSimbolo;
 import analizadorLexico.Token;
 
 import javax.naming.ldap.Control;
+import java.util.Stack;
 import java.util.Vector;
 
 public class AnalizadorSintactico {

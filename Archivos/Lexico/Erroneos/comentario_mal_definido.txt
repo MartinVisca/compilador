@@ -1,1 +1,1 @@
-/%comentario mal definido%$
+/%comentario mal definido%

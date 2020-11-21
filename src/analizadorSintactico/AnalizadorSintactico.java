@@ -6,7 +6,7 @@ import analizadorLexico.AnalizadorLexico;
 import analizadorLexico.RegistroSimbolo;
 import analizadorLexico.Token;
 
-import java.util.Stack;
+import javax.naming.ldap.Control;
 import java.util.Vector;
 
 public class AnalizadorSintactico {
@@ -45,7 +45,6 @@ public class AnalizadorSintactico {
 
     public void addErrorSintactico(String error) { this.listaErrores.add(error); }
 
-    // Método para agregar a la polaca inversa
     public void agregarAPolaca(String elemento) { this.polaca.addElemento(elemento); }
 
     // Método para agregar a la polaca inversa, en una posicion dada
@@ -61,13 +60,13 @@ public class AnalizadorSintactico {
     public int popElementoPila() { return this.pila.pop(); }
 
     // Método para obtener el lexema de un token almacenado en la tabla de símbolos, dado su índice
-    public String getLexemaElemTablaSimb(int indice) { return this.tablaSimbolos.get(indice).getLexema(); }
+    public String getLexemaFromTS(int indice) { return this.tablaSimbolos.get(indice).getLexema(); }
 
     // Método para obtener el tipo de un token almacenado en la tabla de símbolos, dado su índice
-    public String getTipoElemTablaSimb(int indice) { return this.tablaSimbolos.get(indice).getTipoToken(); }
+    public String getTipoFromTS(int indice) { return this.tablaSimbolos.get(indice).getTipoToken(); }
 
     // Método para obtener un token de la tabla de símbolos dado su indice
-    public RegistroSimbolo getElemTablaSimb(int indice) { return this.tablaSimbolos.get(indice); }
+    public RegistroSimbolo getRegistroFromTS(int indice) { return this.tablaSimbolos.get(indice); }
 
     // Modifica el atributo uso de una determinada entrada de la tabla de símbolos
     public void setUsoTablaSimb(int indice, String uso) { this.tablaSimbolos.get(indice).setUso(uso); }
@@ -141,8 +140,14 @@ public class AnalizadorSintactico {
 
     // Método para imprimir los errores sintácticos
     public void imprimirErroresSintacticos() {
-        if (this.listaErrores.isEmpty())
+        System.out.println("\n");
+        System.out.println("---------------------");
+        System.out.println(" ERRORES SINTACTICOS");
+        if (this.listaErrores.isEmpty()) {
+            System.out.println("---------------------");
             System.out.println("Ejecución sin errores");
+        }
+
         else {
             for (int i = 0; i < this.listaErrores.size(); i++)
                 System.out.println(this.listaErrores.get(i));
@@ -162,6 +167,7 @@ public class AnalizadorSintactico {
 
     // Método para imprimir el análisis sintáctico
     public void imprimirAnalisisSintactico() {
+        System.out.println("\n");
         System.out.println("----------ANALISIS SINTACTICO-----------");
         if (!analisisSintactico.isEmpty())
             for (String string : analisisSintactico)
@@ -179,6 +185,8 @@ public class AnalizadorSintactico {
     }
 
     public void start() {
+        // parser.setLexico(this.lexico);
+        // parser.setSintactico(this);
         if (parser.yyparse() == 0) {
             System.out.println("Parser finalizo");
             imprimirAnalisisSintactico();

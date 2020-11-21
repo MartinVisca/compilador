@@ -34,6 +34,8 @@ public class AnalizadorLexico {
 
     public AnalizadorLexico(String archivo) {
         this.archivo = archivo;
+        this.archivo = this.archivo.replaceAll("\r\n", "\n");  // Cambiamos los \r\n por \n si los hubiera
+        this.archivo = this.archivo + "$";  // Agregamos el caracter EOF al final
         this.tablaSimbolos = new Vector<>();
         this.listaTokens = new Vector<>();
         this.listaErrores = new ArrayList<>();
@@ -246,7 +248,7 @@ public class AnalizadorLexico {
     // Método para buscar un token en la tabla de símbolos y devolver su índice para asignar la referencia a la TS
     public int getIndiceEnTablaSimbolos(String lexema) {
         for (int i = 0; i < tablaSimbolos.size(); i++) {
-            if (lexema == tablaSimbolos.get(i).getLexema())
+            if (lexema.equals(tablaSimbolos.get(i).getLexema()))
                 return i;
         }
         return -1;
@@ -497,8 +499,13 @@ public class AnalizadorLexico {
 
     // Método para mostrar los errores léxicos producidos durante la ejecución
     public void imprimirErrores() {
-        if (this.listaErrores.isEmpty())
+        System.out.println("\n");
+        System.out.println("---------------------");
+        System.out.println(" ERRORES LEXICOS");
+        if (this.listaErrores.isEmpty()) {
+            System.out.println("---------------------");
             System.out.println("Ejecución sin errores");
+        }
         else {
             for (int i = 0; i < this.listaErrores.size(); i++)
                 System.out.println(this.listaErrores.get(i));

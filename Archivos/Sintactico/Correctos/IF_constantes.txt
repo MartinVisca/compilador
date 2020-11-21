@@ -1,8 +1,7 @@
-LONGINT resultado = 0_l;
-IF (1_l < 2_l) {
+LONGINT resultado;
+resultado = 0_l;
+IF (1_l < 2_l)
 	resultado = 1_l;
-} 
-ELSE {
+ELSE
 	resultado = 2_l;
-}
-END_IF;$
+END_IF

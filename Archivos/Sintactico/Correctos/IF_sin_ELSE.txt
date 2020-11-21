@@ -1,4 +1,5 @@
 IF (1_l < 2_l) {
-	LONGINT resultado = 1_l;
+	LONGINT resultado;
+	resultado = 1_l;
 }
-END_IF;$
+END_IF

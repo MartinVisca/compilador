@@ -1,2 +1,2 @@
 LONGINT entero_menor_rango = -2147483647_l;
-LONGINT entero_mayor_rango = 2147483647_l;$
+LONGINT entero_mayor_rango = 2147483647_l;

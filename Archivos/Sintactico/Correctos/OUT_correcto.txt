@@ -1,1 +1,1 @@
-OUT ('Cadena correcta');$
+OUT ('Cadena correcta');

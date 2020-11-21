@@ -20,7 +20,7 @@ programa : bloque   { sintactico.agregarAnalisis("Se reconocio un programa. (Lin
          ;
 
 bloque : sentencias
-       | sentencias bloque
+       | bloque sentencias
        ;
 
 bloque_sentencias : '{' bloque '}'
@@ -41,12 +41,9 @@ sentencias : sentencias_declarativas
            ;
 
 sentencias_declarativas : tipo lista_variables';' { sintactico.agregarAnalisis("Se reconocio una declaracion de variable. (Linea " + AnalizadorLexico.linea + ")"); }
-                        | tipo ';'  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): no se declaro un identificador para la variable."); }
-                        | ID error ';' {    // Tratamiento de errores para declaracion de variables
-                                            //RegistroSimbolo aux = sintactico.getElemTablaSimb($1.ival);
-                                            //if (!aux.getUso().equals("PROC"))
-                                                //sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): no se declaro el tipo de la variable.");
-                                       }
+                        | tipo lista_variables error    { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta ';' al final de la declaracion."); }
+                        | tipo error   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta declarar el/los identificadores."); }
+                        | ID ';' error   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta declarar el tipo de la variable."); }
                         | declaracion_proc bloque '}'   { if (!sintactico.getErrorProc()) {
                                                                sintactico.agregarAnalisis("Se reconocio un procedimiento. (Linea " + AnalizadorLexico.linea + ")");
                                                                // Agregar polaca
@@ -114,9 +111,9 @@ lista_parametros_formales : ')'     // Sin parametros
                           ;
 
 lista_variables : ID
-                | ID ',' lista_variables
-                | ID lista_variables error     { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en la declaracion de variable. Falta el caracter separador ','."); }
-                | tipo error    { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): el tipo de la variable ya fue definido."); }
+                | lista_variables ',' ID
+                | lista_variables ID error  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta la ',' para separar la lista de variables."); System.out.println($1.ival);}
+                | tipo error    { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): el tipo de la variable ya fue declarado."); }
                 ;
 
 sentencias_ejecutables : asignacion
@@ -150,20 +147,16 @@ sentencia_for : FOR '(' ID '=' CTE ';'
 
 condicion_for : ID comparador expresion     { sintactico.agregarAnalisis("Se reconocio la condicion de corte del FOR. (Linea " + AnalizadorLexico.linea + ")"); }
 
-condicion : expresion comparador expresion { sintactico.agregarAPolaca($2.sval);
-                                             sintactico.agregarAPolaca(" ");
-                                             sintactico.pushElementoPila(sintactico.getSizePolaca() - 1);
-                                             sintactico.agregarAPolaca("BF");
-                                           }
+condicion : expresion comparador expresion
           | error   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): condicion invalida."); }
           ;
 
 asignacion : ID '=' expresion ';'   { sintactico.agregarAnalisis("Se reconocio una asignacion. (Linea " + AnalizadorLexico.linea + ")");
                                       sintactico.agregarAPolaca(sintactico.getElemTablaSimb($1.ival));
                                       sintactico.agregarAPolaca("=");}
-           | ID '=' error ';'   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): la asignacion no tiene expresion asignada."); }
-           | ID expresion error ';'   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta operador '=' en la asignacion."); }
-           | ID ';'   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta el operador '=' y la asignacion no tiene expresion asignada."); }
+           | ID '=' expresion error { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta ';' al final de la asignacion."); }
+           | ID expresion error { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta operador '=' en la asignacion."); }
+           | ID '=' error   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta expresion en la asignacion."); }
            ;
 
 salida : OUT '(' CADENA ')' ';'    { sintactico.agregarAnalisis("Se reconocio una salida por pantalla. (Linea " + AnalizadorLexico.linea + ")");sintactico.agregarAPolaca($3.ival) sintactico.agregarAPolaca("OUT")}

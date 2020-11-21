@@ -1,5 +1,7 @@
-LONGINT suma = 0_l;
-LONGINT i = 0_l;
+LONGINT suma;
+suma = 0_l;
+LONGINT i;
+i = 0_l;
 FOR (i = 1_l; i < 4_l; UP 1_l) {
 	suma = suma + i;
-}$
+}

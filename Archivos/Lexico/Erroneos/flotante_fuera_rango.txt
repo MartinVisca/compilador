@@ -1,1 +1,1 @@
-FLOAT flotante_fuera_rango = 4.4325;$
+FLOAT flotante_fuera_rango = 4.4325f39;

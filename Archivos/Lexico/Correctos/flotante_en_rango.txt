@@ -1,3 +1,3 @@
 FLOAT float_menor_rango = 1.1755;
 FLOAT float_mayor_rango = 3.4028;
-FLOAT flotante_cero = 0.0;$
+FLOAT flotante_cero = 0.0;

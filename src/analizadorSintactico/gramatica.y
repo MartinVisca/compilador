@@ -28,16 +28,24 @@ sentencias : sentencias_ejecutables     { System.out.println("Se reconocio una s
            ;
 
 sentencias_declarativas : tipo lista_variables';' { sintactico.agregarAnalisis("Se reconocio una declaracion de variable. (Linea " + AnalizadorLexico.linea + ")"); }
+                        | tipo lista_variables error    { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta ';' al final de la declaracion."); }
+                        | tipo error   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta declarar el/los identificadores."); }
+                        | ID ';' error   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta declarar el tipo de la variable."); }
                         ;
 
 lista_variables : ID
-                | ID ',' lista_variables
+                | lista_variables ',' ID
+                | lista_variables ID error  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta la ',' para separar la lista de variables."); System.out.println($1.ival);}
+                | tipo error    { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): el tipo de la variable ya fue declarado."); }
                 ;
 
 sentencias_ejecutables : asignacion
                        ;
 
 asignacion : ID '=' expresion ';'   { sintactico.agregarAnalisis("Se reconocio una asignacion. (Linea " + AnalizadorLexico.linea + ")"); }
+           | ID '=' expresion error { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta ';' al final de la asignacion."); }
+           | ID expresion error { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta operador '=' en la asignacion."); }
+           | ID '=' error   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta expresion en la asignacion."); }
            ;
 
 expresion : expresion '+' termino   { sintactico.agregarAnalisis("Se reconocio una suma. (Linea " + AnalizadorLexico.linea + ")"); }
@@ -51,7 +59,10 @@ termino : termino '*' factor    { sintactico.agregarAnalisis("Se reconocio una m
         ;
 
 factor : ID     { System.out.println("Se detecto un ID"); }
-       | CTE    {  System.out.println("se detecto una cte"); }
+       | CTE    {  System.out.println("se detecto una cte");
+
+                   }
+
        | '-' CTE    {  System.out.println("Se detecto una cte negativa");}
        ;
 
@@ -77,4 +88,3 @@ public int yylex() {
 
 public void yyerror(String string) {
 	sintactico.addErrorSintactico("par: " + string);
-}

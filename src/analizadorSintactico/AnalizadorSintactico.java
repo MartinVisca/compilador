@@ -6,7 +6,6 @@ import analizadorLexico.AnalizadorLexico;
 import analizadorLexico.RegistroSimbolo;
 import analizadorLexico.Token;
 
-import javax.naming.ldap.Control;
 import java.util.Vector;
 
 public class AnalizadorSintactico {
@@ -125,8 +124,13 @@ public class AnalizadorSintactico {
 
     // Método para imprimir los errores sintácticos
     public void imprimirErroresSintacticos() {
-        if (this.listaErrores.isEmpty())
+        System.out.println("---------------------");
+        System.out.println("----- ERRORES SINTACTICOS -----");
+        if (this.listaErrores.isEmpty()) {
+            System.out.println("---------------------");
             System.out.println("Ejecución sin errores");
+        }
+
         else {
             for (int i = 0; i < this.listaErrores.size(); i++)
                 System.out.println(this.listaErrores.get(i));

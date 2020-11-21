@@ -1,4 +1,6 @@
 IF (1_l < 2_l) 
-	LONGINT a = 1_l + 2_l;
-	LONGINT b = 1_l - 2_l;
-END_IF;$
+	LONGINT a;
+	a = 1_l + 2_l;
+	LONGINT b;
+	b = 1_l - 2_l;
+END_IF;

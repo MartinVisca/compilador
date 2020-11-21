@@ -1,3 +1,2 @@
 PROC f1(LONGINT a, REF LONGINT b) NI = 2_l 
 	b = a + b;
-$

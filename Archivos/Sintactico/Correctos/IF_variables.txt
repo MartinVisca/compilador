@@ -1,10 +1,11 @@
-LONGINT a = 1_l;
-LONGINT b = 2_l;
-LONGINT resultado = 0_l;
-IF (a < b) {
+LONGINT a;
+a = 1_l;
+LONGINT b;
+b = 2_l;
+LONGINT resultado;
+resultado = 0_l;
+IF (a < b)
 	resultado = a;
-} 
-ELSE {
+ELSE
 	resultado = b;
-}
-END_IF;$
+END_IF

@@ -1,1 +1,1 @@
-FLOAT flotante_completo_nok = 0.1234f45;$
+FLOAT flotante_completo_nok = 0.1234f45;

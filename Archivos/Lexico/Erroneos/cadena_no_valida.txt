@@ -1,1 +1,2 @@
-'cadena \n no valida'$
+'cadena
+no valida'

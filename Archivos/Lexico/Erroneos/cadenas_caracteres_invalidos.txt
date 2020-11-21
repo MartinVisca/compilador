@@ -1,1 +1,1 @@
-identificador\n con car¿acter no valido;$
+identificador\n con car¿acter no valido;

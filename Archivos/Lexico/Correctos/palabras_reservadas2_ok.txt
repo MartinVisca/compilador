@@ -1,1 +1,1 @@
-FUNC retorno OUT integer RETURN ret;$
+FUNC retorno OUT integer RETURN ret;

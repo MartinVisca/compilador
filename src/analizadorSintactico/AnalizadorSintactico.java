@@ -45,13 +45,13 @@ public class AnalizadorSintactico {
     public void agregarAPolaca(String elemento) { this.polaca.addElemento(elemento); }
 
     // Método para obtener el lexema de un token almacenado en la tabla de símbolos, dado su índice
-    public String getLexemaElemTablaSimb(int indice) { return this.tablaSimbolos.get(indice).getLexema(); }
+    public String getLexemaFromTS(int indice) { return this.tablaSimbolos.get(indice).getLexema(); }
 
     // Método para obtener el tipo de un token almacenado en la tabla de símbolos, dado su índice
-    public String getTipoElemTablaSimb(int indice) { return this.tablaSimbolos.get(indice).getTipoToken(); }
+    public String getTipoFromTS(int indice) { return this.tablaSimbolos.get(indice).getTipoToken(); }
 
     // Método para obtener un token de la tabla de símbolos dado su indice
-    public RegistroSimbolo getElemTablaSimb(int indice) { return this.tablaSimbolos.get(indice); }
+    public RegistroSimbolo getRegistroFromTS(int indice) { return this.tablaSimbolos.get(indice); }
 
     // Modifica el atributo uso de una determinada entrada de la tabla de símbolos
     public void setUsoTablaSimb(int indice, String uso) { this.tablaSimbolos.get(indice).setUso(uso); }
@@ -159,7 +159,6 @@ public class AnalizadorSintactico {
         // parser.setSintactico(this);
         if (parser.yyparse() == 0) {
             System.out.println("Parser finalizo");
-            imprimirAnalisisLexico();
             imprimirAnalisisSintactico();
             imprimirTablaSimbolos();
         }

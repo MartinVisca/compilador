@@ -21,6 +21,10 @@ public class ConsumidorTokens {
             while (analizadorLexico.isCodigoLeido() == false)
                 analizadorLexico.yylex();
             Vector<Token> tokens = analizadorLexico.getListaTokens();
+            if (tokens.isEmpty()) {
+                System.out.println("----------------");
+                System.out.println("No se detectaron tokens.");
+            }
             for (Token token : tokens) {
                 System.out.println("----------------");
                 System.out.println("Tipo token: " + token.getTipo());

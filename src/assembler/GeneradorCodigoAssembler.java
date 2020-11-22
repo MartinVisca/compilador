@@ -66,7 +66,41 @@ public class GeneradorCodigoAssembler {
         registros.add(false);
     }
 
-    public String generarEstructuraGeneralAssembler() {
+    public String generarAssembler() {
+        this.codigoAssembler = new StringBuffer();
+
+        codigoAssembler.append("; \\masm32\\bin\\ml /c /Zd /coff ");
+        codigoAssembler.append("; \\masm32\\bin\\Link /SUBSYSTEM:CONSOLE ");
+        codigoAssembler.append(".386");
+        codigoAssembler.append(".model flat, stdcall");
+        codigoAssembler.append("option casemap :none");
+        codigoAssembler.append(";------------ INCLUDES ------------");
+        codigoAssembler.append("include \\masm32\\include\\windows.inc");
+        codigoAssembler.append("include \\masm32\\macros\\macros.asm");
+        codigoAssembler.append("include \\masm32\\include\\masm32.inc");
+        codigoAssembler.append("include \\masm32\\include\\kernel32.inc");
+        codigoAssembler.append("include \\masm32\\include\\user32.inc");
+        codigoAssembler.append("include \\masm32\\include\\gdi32.inc");
+        codigoAssembler.append(";------------ LIBRERÍAS ------------");
+        codigoAssembler.append("includelib \\masm32\\lib\\masm32.lib");
+        codigoAssembler.append("includelib \\masm32\\lib\\gdi32.lib");
+        codigoAssembler.append("includelib \\masm32\\lib\\kernel32.lib");
+        codigoAssembler.append("includelib \\masm32\\lib\\user32.lib");
+        codigoAssembler.append(".DATA ");
+        codigoAssembler.append(this.generarPuntoData());
+        codigoAssembler.append(".CODE");
+        codigoAssembler.append("START:");
+        codigoAssembler.append(this.generarPuntoCode());
+        codigoAssembler.append("END START");
+
+        return this.codigoAssembler.toString();
+    }
+
+    public String generarPuntoCode() {
+        return "";
+    }
+
+    public String generarPuntoData() {
         return "";
     }
 }

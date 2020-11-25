@@ -445,13 +445,13 @@ public class AnalizadorLexico {
         char caracterActual;
         int columnaCaracter;
         AccionSemantica accion;
-        while ((posArchivo < archivo.length()) && (tokenActual != 0) && (tokenActual == -1)) {
+         while ((posArchivo < archivo.length()) && (tokenActual != 0) && (tokenActual == -1)) {
             caracterActual = archivo.charAt(posArchivo);
             columnaCaracter = this.getColumnaCaracter(caracterActual);
             accion = this.matrizAccionesSemanticas.get(estadoActual, columnaCaracter);
             if (accion != null)
                 accion.ejecutar(buffer, caracterActual);
-            if (caracterActual == '\n' && estadoActual != 6)    // Si es un salto de línea y no estoy dentro de la cadena
+            if (caracterActual == '\n' && estadoActual != 6 && estadoActual == 0)    // Si es un salto de línea y no estoy dentro de la cadena
                 linea++;
             if (caracterActual == '$')
                 if (esFinDeArchivo())

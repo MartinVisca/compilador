@@ -1,5 +1,6 @@
 package assembler;
 
+import analizadorLexico.RegistroSimbolo;
 import analizadorSintactico.AnalizadorSintactico;
 
 import java.util.Stack;
@@ -10,6 +11,7 @@ public class GeneradorCodigoAssembler {
     private String assemblerGenerado; //String con el código assembler ya generado
     private StringBuffer codigoAssembler; //String que va almacenando el código a medida que se va generando
     private static final Stack<String[]> pila = new Stack<>(); //Por cada entrada, la pila almacenará una 2-upla compuesta por el lexema y el tipo de la variable
+    private AnalizadorSintactico analizadorSintactico;
 
     //Mensajes de error correspondientes a los chequeos semánticos asignados
     private final static String ERROR_OVERFLOW_SUMA = "ERROR: overflow en suma; el resultado está fuera del rango permitido para el tipo en cuestión";
@@ -23,9 +25,14 @@ public class GeneradorCodigoAssembler {
     //Estructura para identificar si un registro determinado está o no ocupado
     private final Vector<Boolean> registros;
 
-    private AnalizadorSintactico analizadorSintactico;
+    //Constantes propias de los usos de las entradas de la tabla de símbolos
+    private final static String USO_VARIABLE = "VARIABLE";
+    private final static String USO_CONSTANTE = "CONSTANTE";
+    private final static String USO_CADENA_CARACTERES = "CADENA DE CARACTERES";
 
     public GeneradorCodigoAssembler(AnalizadorSintactico analizadorSintactico) {
+        this.analizadorSintactico = analizadorSintactico;
+
         //Inicialización de estructuras
         this.operadoresBinarios = new Vector<>();
         this.operadoresUnarios = new Vector<>();
@@ -67,8 +74,6 @@ public class GeneradorCodigoAssembler {
         registros.add(false);
         registros.add(false);
         registros.add(false);
-
-        this.analizadorSintactico = analizadorSintactico;
     }
 
     public String generarAssembler() {
@@ -120,7 +125,18 @@ public class GeneradorCodigoAssembler {
     private String getVariablesDeclaradas() {
         StringBuffer variables = new StringBuffer();
 
-        
+        Vector<RegistroSimbolo> tablaSimbolos = analizadorSintactico.getTablaSimbolos();
+        for (RegistroSimbolo entrada : tablaSimbolos) {
+            String usoEntrada = entrada.getUso();
+
+            if (usoEntrada.equals(this.USO_VARIABLE)) {
+                
+            } else if (usoEntrada.equals(this.USO_CONSTANTE)) {
+
+            } else if (usoEntrada.equals(this.USO_CADENA_CARACTERES)) {
+
+            }
+        }
 
         return variables.toString();
     }

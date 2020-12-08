@@ -34,6 +34,10 @@ public class AnalizadorSintactico {
         this.tablaSimbolos = lexico.getTablaSimbolos();
     }
 
+    public Vector<RegistroSimbolo> getTablaSimbolos() {
+        return tablaSimbolos;
+    }
+
     public boolean getErrorProc() { return errorProc; }
 
     public void setErrorProc(boolean errorProc) { this.errorProc = errorProc; }

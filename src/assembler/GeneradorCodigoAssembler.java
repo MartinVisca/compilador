@@ -1,13 +1,14 @@
 package assembler;
 
+import analizadorSintactico.AnalizadorSintactico;
+
 import java.util.Stack;
 import java.util.Vector;
 
 public class GeneradorCodigoAssembler {
 
     private String assemblerGenerado; //String con el código assembler ya generado
-    private StringBuffer codigoAssembler; //String que va almacenando el código a medida que se va generando. Es equivalente al .CODE
-    private StringBuffer dataAssembler; //String constructor del .DATA
+    private StringBuffer codigoAssembler; //String que va almacenando el código a medida que se va generando
     private static final Stack<String[]> pila = new Stack<>(); //Por cada entrada, la pila almacenará una 2-upla compuesta por el lexema y el tipo de la variable
 
     //Mensajes de error correspondientes a los chequeos semánticos asignados
@@ -22,7 +23,9 @@ public class GeneradorCodigoAssembler {
     //Estructura para identificar si un registro determinado está o no ocupado
     private final Vector<Boolean> registros;
 
-    public GeneradorCodigoAssembler() {
+    private AnalizadorSintactico analizadorSintactico;
+
+    public GeneradorCodigoAssembler(AnalizadorSintactico analizadorSintactico) {
         //Inicialización de estructuras
         this.operadoresBinarios = new Vector<>();
         this.operadoresUnarios = new Vector<>();
@@ -64,6 +67,8 @@ public class GeneradorCodigoAssembler {
         registros.add(false);
         registros.add(false);
         registros.add(false);
+
+        this.analizadorSintactico = analizadorSintactico;
     }
 
     public String generarAssembler() {
@@ -96,11 +101,28 @@ public class GeneradorCodigoAssembler {
         return this.codigoAssembler.toString();
     }
 
+    public String generarPuntoData() {
+        StringBuffer puntoData = new StringBuffer();
+
+        puntoData.append("overflowSuma db \\\"Error: El resultado de la suma ejecutada no está dentro del rango permitido\\\" , 0\"");
+        puntoData.append("divisionPorCero db \\\"Error: La división por cero no es una operación válida\\\" , 0");
+
+        if (!this.getVariablesDeclaradas().isEmpty())
+            puntoData.append(this.getVariablesDeclaradas());
+
+        return puntoData.toString();
+    }
+
     public String generarPuntoCode() {
         return "";
     }
 
-    public String generarPuntoData() {
-        return "";
+    private String getVariablesDeclaradas() {
+        StringBuffer variables = new StringBuffer();
+
+        
+
+        return variables.toString();
     }
+
 }

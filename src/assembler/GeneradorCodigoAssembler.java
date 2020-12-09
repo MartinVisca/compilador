@@ -13,6 +13,10 @@ public class GeneradorCodigoAssembler {
     private static final Stack<String[]> pila = new Stack<>(); //Por cada entrada, la pila almacenará una 2-upla compuesta por el lexema y el tipo de la variable
     private AnalizadorSintactico analizadorSintactico;
 
+    //Contadores para las constantes y cadenas
+    private int numeroConstante;
+    private int numeroCadena;
+
     //Mensajes de error correspondientes a los chequeos semánticos asignados
     private final static String ERROR_OVERFLOW_SUMA = "ERROR: overflow en suma; el resultado está fuera del rango permitido para el tipo en cuestión";
     private final static String ERROR_DIVISOR_IGUAL_A_CERO = "ERROR: el divisor de la operación es igual a cero";
@@ -32,6 +36,8 @@ public class GeneradorCodigoAssembler {
 
     public GeneradorCodigoAssembler(AnalizadorSintactico analizadorSintactico) {
         this.analizadorSintactico = analizadorSintactico;
+        this.numeroCadena = 0;
+        this.numeroConstante = 0;
 
         //Inicialización de estructuras
         this.operadoresBinarios = new Vector<>();
@@ -107,6 +113,7 @@ public class GeneradorCodigoAssembler {
     }
 
     public String generarPuntoData() {
+        /*Generación de la sección .DATA del código Assembler.*/
         StringBuffer puntoData = new StringBuffer();
 
         puntoData.append("overflowSuma db \\\"Error: El resultado de la suma ejecutada no está dentro del rango permitido\\\" , 0\"");
@@ -123,18 +130,30 @@ public class GeneradorCodigoAssembler {
     }
 
     private String getVariablesDeclaradas() {
+        /*Convierte a Assembler las variables que esten declaradas en la tabla de símbolos propia del analizador sintáctico.*/
         StringBuffer variables = new StringBuffer();
-
         Vector<RegistroSimbolo> tablaSimbolos = analizadorSintactico.getTablaSimbolos();
+
         for (RegistroSimbolo entrada : tablaSimbolos) {
             String usoEntrada = entrada.getUso();
 
-            if (usoEntrada.equals(this.USO_VARIABLE)) {
-                
-            } else if (usoEntrada.equals(this.USO_CONSTANTE)) {
-
-            } else if (usoEntrada.equals(this.USO_CADENA_CARACTERES)) {
-
+            if (usoEntrada.equals(this.USO_VARIABLE)) { //Si es VARIABLE se agrega el lexema de la misma y el tamaño asignado (4 bytes para LONGINT, 2 para FLOAT)
+                variables.append(entrada.getLexema());
+                if (entrada.getTipoToken().equals("LONGINT"))
+                    variables.append(" DD ? \n");
+                else if (entrada.getTipoToken().equals("FLOAT"))
+                    variables.append(" DW ? \n");
+            } else if (usoEntrada.equals(this.USO_CONSTANTE)) { //Si es CONSTANTE se agrega CTE y luego el tamaño de la misma, los cuales coinciden con los asignados para las variables
+                if (entrada.getTipoToken().equals("LONGINT")) {
+                    variables.append("Constante" + this.numeroConstante);
+                    variables.append("DD ");
+                    variables.append(entrada.getLexema() + "\n");
+                    this.numeroConstante++;
+                }
+            } else if (usoEntrada.equals(this.USO_CADENA_CARACTERES)) { //Si es CADENA se agrega la cadena con un tamaño predefinido de 1 byte
+                variables.append("Cadena" + this.numeroCadena + " DB ");
+                variables.append(entrada.getLexema() + ",0 \n");
+                this.numeroCadena++;
             }
         }
 

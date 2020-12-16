@@ -27,4 +27,8 @@ public class PolacaInversa {
         this.estructuraPolaca.removeAllElements();
     }
 
+    public int getTamañoPolaca() {
+        return this.estructuraPolaca.size();
+    }
+
 }

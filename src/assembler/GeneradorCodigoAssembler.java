@@ -2,6 +2,7 @@ package assembler;
 
 import analizadorLexico.RegistroSimbolo;
 import analizadorSintactico.AnalizadorSintactico;
+import analizadorSintactico.PolacaInversa;
 
 import java.util.Stack;
 import java.util.Vector;
@@ -10,12 +11,13 @@ public class GeneradorCodigoAssembler {
 
     private String assemblerGenerado; //String con el código assembler ya generado
     private StringBuffer codigoAssembler; //String que va almacenando el código a medida que se va generando
-    private static final Stack<String[]> pila = new Stack<>(); //Por cada entrada, la pila almacenará una 2-upla compuesta por el lexema y el tipo de la variable
+    private static final Stack<String> pila = new Stack<>(); //Por cada entrada, la pila almacenará una 2-upla compuesta por el lexema y el tipo de la variable
     private AnalizadorSintactico analizadorSintactico;
 
-    //Contadores para las constantes y cadenas
+    //Contadores para las constantes, cadenas y variables auxiliares
     private int numeroConstante;
     private int numeroCadena;
+    private int numeroVariableAuxiliar;
 
     //Mensajes de error correspondientes a los chequeos semánticos asignados
     private final static String ERROR_OVERFLOW_SUMA = "ERROR: overflow en suma; el resultado está fuera del rango permitido para el tipo en cuestión";
@@ -38,6 +40,7 @@ public class GeneradorCodigoAssembler {
         this.analizadorSintactico = analizadorSintactico;
         this.numeroCadena = 0;
         this.numeroConstante = 0;
+        this.numeroVariableAuxiliar = 0;
 
         //Inicialización de estructuras
         this.operadoresBinarios = new Vector<>();
@@ -50,14 +53,7 @@ public class GeneradorCodigoAssembler {
         this.operadoresBinarios.add("-");
         this.operadoresBinarios.add("*");
         this.operadoresBinarios.add("/");
-
-        //Operadores binarios de comparación
-        this.operadoresBinarios.add("==");
-        this.operadoresBinarios.add("!=");
-        this.operadoresBinarios.add("<=");
-        this.operadoresBinarios.add("<");
-        this.operadoresBinarios.add(">=");
-        this.operadoresBinarios.add(">");
+        this.operadoresBinarios.add("=");
 
         //Operadores unarios
         this.operadoresUnarios.add("UP");
@@ -116,17 +112,13 @@ public class GeneradorCodigoAssembler {
         /*Generación de la sección .DATA del código Assembler.*/
         StringBuffer puntoData = new StringBuffer();
 
-        puntoData.append("overflowSuma db \\\"Error: El resultado de la suma ejecutada no está dentro del rango permitido\\\" , 0\"");
-        puntoData.append("divisionPorCero db \\\"Error: La división por cero no es una operación válida\\\" , 0");
+        puntoData.append("overflowSuma db \"Error: El resultado de la suma ejecutada no está dentro del rango permitido\" , 0");
+        puntoData.append("divisionPorCero db \"Error: La división por cero no es una operación válida\" , 0");
 
         if (!this.getVariablesDeclaradas().isEmpty())
             puntoData.append(this.getVariablesDeclaradas());
 
         return puntoData.toString();
-    }
-
-    public String generarPuntoCode() {
-        return "";
     }
 
     private String getVariablesDeclaradas() {
@@ -152,12 +144,82 @@ public class GeneradorCodigoAssembler {
                 }
             } else if (usoEntrada.equals(this.USO_CADENA_CARACTERES)) { //Si es CADENA se agrega la cadena con un tamaño predefinido de 1 byte
                 variables.append("Cadena" + this.numeroCadena + " DB ");
-                variables.append(entrada.getLexema() + ",0 \n");
+                variables.append(entrada.getLexema() + ", 0 \n");
                 this.numeroCadena++;
             }
         }
 
         return variables.toString();
+    }
+
+    public String generarPuntoCode() {
+        StringBuffer puntoCode = new StringBuffer();
+
+        puntoCode.append("START:\n");
+        puntoCode.append(this.generarStart());
+        //Llamado y seteo de los label de los errores
+        //@ERROR_OVERFLOW es el error del overflow de la suma
+        puntoCode.append("END START");
+
+        return puntoCode.toString();
+    }
+
+    public String generarStart() {
+        StringBuffer start = new StringBuffer();
+        PolacaInversa polaca = this.analizadorSintactico.getPolaca();
+        Vector<RegistroSimbolo> tablaSimbolos = analizadorSintactico.getTablaSimbolos();
+        Boolean agregoAPila = false;
+
+        for (int i = 0; i < polaca.getTamañoPolaca(); i++) {
+            String simboloPolaca = polaca.getElemento(i);
+
+            for (RegistroSimbolo simboloTabla : tablaSimbolos) {
+                if (simboloTabla.getLexema().equals(simboloPolaca)) {
+                    pila.push(simboloPolaca);
+                    agregoAPila = true;
+                    break;
+                }
+            }
+
+            if (!agregoAPila) {
+                String variableAuxiliar = "";
+
+                if (this.operadoresBinarios.contains(simboloPolaca)) {
+                    if (simboloPolaca.equals("+")) {
+                        variableAuxiliar = "@auxiliar" + String.valueOf(this.numeroVariableAuxiliar);
+                        
+
+                    } else if (simboloPolaca.equals("-")) {
+                        //Resta
+                    } else if (simboloPolaca.equals("*")) {
+                        //Multiplicación
+                    } else if (simboloPolaca.equals("/")) {
+                        //División
+                    } else if (simboloPolaca.equals("=")) {
+                        //Asignación
+                    }
+                } else if (this.operadoresUnarios.contains(simboloPolaca)) {
+                    //Evaluar si sólo consideramos las cadenas (OUT) o también el resto de los operadores unarios.
+                } else if (this.comparadores.contains(simboloPolaca)) {
+                    if (simboloPolaca.equals(">=")) {
+
+                    } else if (simboloPolaca.equals("<=")) {
+
+                    } else if (simboloPolaca.equals("!=")) {
+
+                    } else if (simboloPolaca.equals("==")) {
+
+                    } else if (simboloPolaca.equals("<")) {
+
+                    } else if (simboloPolaca.equals(">")) {
+
+                    }
+                }
+            } else
+                agregoAPila = false;
+        }
+
+        return start.toString();
     }
 
 }

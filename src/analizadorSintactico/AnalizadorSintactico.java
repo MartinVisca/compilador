@@ -38,6 +38,14 @@ public class AnalizadorSintactico {
         return tablaSimbolos;
     }
 
+    public PolacaInversa getPolaca() {
+        return polaca;
+    }
+
+    public void setPolaca(PolacaInversa polaca) {
+        this.polaca = polaca;
+    }
+
     public boolean getErrorProc() { return errorProc; }
 
     public void setErrorProc(boolean errorProc) { this.errorProc = errorProc; }

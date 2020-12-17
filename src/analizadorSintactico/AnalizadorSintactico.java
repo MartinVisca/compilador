@@ -12,6 +12,8 @@ public class AnalizadorSintactico {
 
     // Variables
     private boolean errorProc = false;  // Variable para determinar si se produjo un error cuando se declara un PROC
+    private boolean errorIf = false;    // Variable para determinar si se produjo un error cuando se declara un IF
+    private boolean errorInvocacion = false;    // Variable para determinar si se produjo un error en la invocacion de un PROC
 
     // Estructuras
     private AnalizadorLexico lexico;    // Se utiliza para obtener los tokens y poder verificar la sintaxis del codigo
@@ -37,6 +39,14 @@ public class AnalizadorSintactico {
 
     public void setErrorProc(boolean errorProc) { this.errorProc = errorProc; }
 
+    public boolean getErrorIf() { return errorIf; }
+
+    public void setErrorIf(boolean errorIf) { this.errorIf = errorIf; }
+
+    public boolean getErrorInvocacion() { return errorInvocacion; }
+
+    public void setErrorInvocacion(boolean errorInvocacion) { this.errorInvocacion = errorInvocacion; }
+
     public void agregarAnalisis(String analisis) { this.analisisSintactico.add(analisis); }
 
     public void addErrorSintactico(String error) { this.listaErrores.add(error); }
@@ -54,6 +64,9 @@ public class AnalizadorSintactico {
 
     // Modifica el atributo uso de una determinada entrada de la tabla de símbolos
     public void setUsoTablaSimb(int indice, String uso) { this.tablaSimbolos.get(indice).setUso(uso); }
+
+    // Agrega el signo '-' a los números negativos en la tabla de símbolos
+    public void setNegativoTablaSimb(int indice) { this.tablaSimbolos.get(indice).setLexema('-' + this.tablaSimbolos.get(indice).getLexema()); }
 
     // Método para verificar si una identificador ya fue declarado o no. Si fue declarado, agrega un error
     public boolean variableFueDeclarada(int referenciaATS) {
@@ -91,24 +104,10 @@ public class AnalizadorSintactico {
         }
     }
 
-    // Método para verificar el rango de un FLOAT negativo
-    public void verificarRangoFloat(int indice) {
-        String lexema = this.tablaSimbolos.get(indice).getLexema();
-        lexema = "-" + lexema;
-        Float numero = Float.parseFloat(lexema.replace('f', 'E'));
-        // Si está en rango, modificamos la tabla de simbolos
-        if (numero > -ControlarRangoFlotante.MAXIMO_FLOAT && numero < -ControlarRangoFlotante.MINIMO_FLOAT) {
-            this.tablaSimbolos.get(indice).setLexema(lexema);
-        }
-        // Si está fuera de rango lo eliminamos de la tabla de simbolos y devolvemos error
-        else {
-            this.tablaSimbolos.remove(indice);
-            addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): la constante FLOAT está fuera de rango.");
-        }
-    }
-
     // Método para imprimir la tabla de simbolos luego del analisis sintactico
     public void imprimirTablaSimbolos() {
+        System.out.println("\n");
+        System.out.println("----------TABLA DE SIMBOLOS-----------");
         if (this.tablaSimbolos.isEmpty())
             System.out.println("Tabla de símbolos vacía");
         else {
@@ -127,6 +126,7 @@ public class AnalizadorSintactico {
         System.out.println("\n");
         System.out.println("---------------------");
         System.out.println(" ERRORES SINTACTICOS");
+        System.out.println("---------------------");
         if (this.listaErrores.isEmpty()) {
             System.out.println("---------------------");
             System.out.println("Ejecución sin errores");
@@ -161,8 +161,6 @@ public class AnalizadorSintactico {
     }
 
     public void start() {
-        // parser.setLexico(this.lexico);
-        // parser.setSintactico(this);
         if (parser.yyparse() == 0) {
             System.out.println("Parser finalizo");
             imprimirAnalisisLexico();

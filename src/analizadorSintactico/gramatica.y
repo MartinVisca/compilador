@@ -70,6 +70,7 @@ declaracion_proc : PROC ID  {   // sintactico.setUsoTablaSimb($2.ival, "PROC");
                             }
                    '(' lista_parametros_formales control_invocaciones   { if (sintactico.getErrorProc() == false)
                                                                                 sintactico.agregarAnalisis("Se reconocio una declaracion de procedimiento. (Linea " + AnalizadorLexico.linea + ")");
+                                                                          sintactico.setErrorProc(false);
                                                                         }
                  | PROC '(' error '{' { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta el identificador del procedimiento");
                                         sintactico.setErrorProc(true);
@@ -139,7 +140,11 @@ salida : OUT '(' CADENA ')' ';'    { sintactico.agregarAnalisis("Se reconocio un
        | OUT '(' ')' error     { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta declarar una cadena entre los parentesis para poder imprimir."); }
        ;
 
-invocacion_proc : ID '(' parametros ';'    { sintactico.agregarAnalisis("Se reconocio una invocacion a procedimiento. (Linea " + AnalizadorLexico.linea + ")"); }
+invocacion_proc : ID '(' parametros ';'    {
+                                                if (sintactico.getErrorInvocacion() == false)
+                                                    sintactico.agregarAnalisis("Se reconocio una invocacion a procedimiento. (Linea " + AnalizadorLexico.linea + ")");
+                                                sintactico.setErrorInvocacion(false);
+                                           }
                 | '(' parametros ';'    { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta declarar el identificador del procedimiento a invocar."); }
                 | ID '(' parametros error    { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + (AnalizadorLexico.linea - 1) + "): falta el ';' al final de la invocacion."); }
                 ;
@@ -148,18 +153,44 @@ parametros : ')'
            | ID ':' ID ')'
            | ID ':' ID ',' ID ':' ID ')'
            | ID ':' ID ',' ID ':' ID ',' ID ':' ID ')'
-           | ',' error ')'   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); }
-           | ':' error ')'  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); }
-           | ID ',' error ')'  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); }
+           | ',' error ')'   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ':' error ')'  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ',' error ')'  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ':' ',' error ')'  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ID error ')'  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ':' ')' error  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ')' error  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ':' ID  error  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta el parentesis que cierra los parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ':' ID ':' error ')'  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ':' ID ',' ':' error ')'  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ':' ID ',' ID ID error ')'  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ':' ID ',' ID ':' ')' error  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ':' ID ',' ID ')' error  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ':' ID ',' ID ':' ID  error  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta el parentesis que cierra los parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ':' ID ',' ID ':' ',' error ')'  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ':' ID ',' ID ':' ID ':' error ')'  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ':' ID ',' ID ':' ID ',' ':' error ')'  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ':' ID ',' ID ':' ID ',' ID ID error ')'  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ':' ID ',' ID ':' ID ',' ID ':' ')' error  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ':' ID ',' ID ':' ID ',' ID ')' error  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+           | ID ':' ID ',' ID ':' ID ',' ID ':' ID error  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta el parentesis que cierra los parametros formales."); sintactico.setErrorInvocacion(true);}
            ;
 
-sentencia_if : IF '(' condicion ')' cuerpo_if END_IF    { sintactico.agregarAnalisis("Se reconocio una sentencia IF. (Linea " + AnalizadorLexico.linea + ")"); }
-             | IF '(' condicion ')' cuerpo_if error     { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta END_IF al final de la sentencia IF."); }
-             | IF '(' condicion ')' cuerpo_if ELSE cuerpo_else END_IF     { sintactico.agregarAnalisis("Se reconocio una sentencia IF ELSE. (Linea " + AnalizadorLexico.linea + ")"); }
-             | IF '(' condicion ')' cuerpo_if ELSE cuerpo_else error      { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta END_IF al final de la sentencia IF."); }
-             | IF condicion error   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): faltan '(' en la condicion del IF."); }
-             | IF '(' condicion cuerpo_if error     { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): faltan ')' en la condicion del IF."); }
-             | IF '(' ')'  error     { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta la condicion del IF."); }
+sentencia_if : IF '(' condicion ')' cuerpo_if END_IF    {
+                                                           if (sintactico.getErrorIf() == false)
+                                                                sintactico.agregarAnalisis("Se reconocio una sentencia IF. (Linea " + AnalizadorLexico.linea + ")");
+                                                           sintactico.setErrorIf(false);
+                                                        }
+             | IF '(' condicion ')' cuerpo_if error     { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta END_IF al final de la sentencia IF."); sintactico.setErrorIf(true);}
+             | IF '(' condicion ')' cuerpo_if ELSE cuerpo_else END_IF     {
+                                                                             if (sintactico.getErrorIf() == false)
+                                                                                  sintactico.agregarAnalisis("Se reconocio una sentencia IF ELSE. (Linea " + AnalizadorLexico.linea + ")");
+                                                                             sintactico.setErrorIf(false);
+                                                                          }
+             | IF '(' condicion ')' cuerpo_if ELSE cuerpo_else error      { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta END_IF al final de la sentencia IF."); sintactico.setErrorIf(true);}
+             | IF condicion error   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): faltan '(' en la condicion del IF."); sintactico.setErrorIf(true);}
+             | IF '(' condicion cuerpo_if error     { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): faltan ')' en la condicion del IF."); sintactico.setErrorIf(true);}
+             | IF '(' ')'  error     { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta la condicion del IF."); sintactico.setErrorIf(true);}
              ;
 
 cuerpo_if : bloque_sentencias       { sintactico.agregarAPolacaEnPos(sintactico.popElementoPila(), "[" + (sintactico.getSizePolaca() + 2) + "]");
@@ -207,9 +238,7 @@ factor : ID
                     sintactico.agregarAPolaca(sintactico.getLexemaFromTS($1.ival));
                 }
        | '-' CTE    {
-                        String tipo = sintactico.getTipoFromTS($2.ival);
-                        if (tipo.equals("FLOAT"))
-                            sintactico.verificarRangoFloat($2.ival);
+                        sintactico.setNegativoTablaSimb($2.ival);
                     }
        ;
 
@@ -241,7 +270,7 @@ public void setSintactico(AnalizadorSintactico sintactico) { this.sintactico = s
 public int yylex() {
     int token = lexico.yylex();
     if (lexico.getRefTablaSimbolos() != -1)
-        yyval = new ParserVal(lexico.getRefTablaSimbolos());
+        yylval = new ParserVal(lexico.getRefTablaSimbolos());
     return token;
 }
 

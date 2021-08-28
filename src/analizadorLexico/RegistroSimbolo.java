@@ -7,6 +7,7 @@ public class RegistroSimbolo {
 
     private String lexema;
     private String tipoToken;
+    private String tipoVariable; // Tipo de la variable (FLOAT o LONGINT)
     private String uso; //Uso que se le da a la variable o símbolo
     private String ambito; //Lugar de definición de la variable, siguiendo Name Mangling
     private int invocacionesPermitidas; //Cantidad de invocaciones que se permiten para un símbolo determinado
@@ -21,6 +22,7 @@ public class RegistroSimbolo {
     public RegistroSimbolo(String lexema, String tipoToken) {
         this.lexema = lexema;
         this.tipoToken = tipoToken;
+        this.tipoVariable = "";
         this.uso = "";
         this.ambito = "";
         this.invocacionesPermitidas = INVOCACIONES_PERMITIDAS_POR_DEFECTO; //Por defecto se setea el número más alto de invocaciones, indicando que no hay un límite definido
@@ -42,6 +44,10 @@ public class RegistroSimbolo {
     public void setTipoToken(String tipoToken) {
         this.tipoToken = tipoToken;
     }
+
+    public String getTipoVariable() { return tipoVariable; }
+
+    public void setTipoVariable(String tipoVariable) { this.tipoVariable = tipoVariable; }
 
     public String getUso() {
         return uso;

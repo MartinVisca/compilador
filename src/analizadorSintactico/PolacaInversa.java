@@ -32,8 +32,8 @@ public class PolacaInversa {
     public boolean esVacia() { return this.estructuraPolaca.isEmpty(); }
 
     public void imprimirPolaca () {
-        for (String string : this.estructuraPolaca)
-            System.out.println(string);
+        for (int i = 0; i < this.getSize() ; i++)
+            System.out.println(i + " " + this.getElemento(i));
     }
 
 }

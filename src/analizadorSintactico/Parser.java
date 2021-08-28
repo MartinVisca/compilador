@@ -577,7 +577,7 @@ final static String yyrule[] = {
 "tipo : FLOAT",
 };
 
-//#line 262 "gramatica.y"
+//#line 277 "gramatica.y"
 
 private AnalizadorLexico lexico;
 private AnalizadorSintactico sintactico;
@@ -872,62 +872,79 @@ case 43:
 //#line 107 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): la cantidad de parametros formales del procedimiento fue excedida."); sintactico.setErrorProc(true); }
 break;
+case 44:
+//#line 110 "gramatica.y"
+{ sintactico.setAmbitoTablaSimb(val_peek(0).ival);
+                       sintactico.setUsoTablaSimb(val_peek(0).ival, "VARIABLE");
+                       if (!sintactico.variableFueDeclarada(val_peek(0).ival))
+                            sintactico.setTipoVariableTablaSimb(val_peek(0).ival);
+                     }
+break;
+case 45:
+//#line 115 "gramatica.y"
+{
+                                              sintactico.setAmbitoTablaSimb(val_peek(2).ival);
+                                              sintactico.setUsoTablaSimb(val_peek(2).ival, "VARIABLE");
+                                              if (!sintactico.variableFueDeclarada(val_peek(2).ival))
+                                                    sintactico.setTipoVariableTablaSimb(val_peek(2).ival);
+                                         }
+break;
 case 46:
-//#line 112 "gramatica.y"
+//#line 121 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta la ',' para separar la lista de variables."); System.out.println(val_peek(2).ival);}
 break;
 case 47:
-//#line 113 "gramatica.y"
+//#line 122 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): el tipo de la variable ya fue declarado."); }
 break;
 case 53:
-//#line 123 "gramatica.y"
+//#line 132 "gramatica.y"
 { sintactico.agregarAnalisis("Se reconocio una asignacion. (Linea " + AnalizadorLexico.linea + ")");
                                       sintactico.agregarAPolaca(sintactico.getLexemaFromTS(val_peek(3).ival));
                                       sintactico.agregarAPolaca("=");
                                     }
 break;
 case 54:
-//#line 127 "gramatica.y"
+//#line 136 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + (AnalizadorLexico.linea - 1) + "): falta ';' al final de la asignacion."); }
 break;
 case 55:
-//#line 128 "gramatica.y"
+//#line 137 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta operador '=' en la asignacion."); }
 break;
 case 56:
-//#line 129 "gramatica.y"
+//#line 138 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta expresion en la asignacion."); }
 break;
 case 57:
-//#line 132 "gramatica.y"
+//#line 141 "gramatica.y"
 { sintactico.agregarAnalisis("Se reconocio una salida por pantalla. (Linea " + AnalizadorLexico.linea + ")");
                                      sintactico.agregarAPolaca(sintactico.getLexemaFromTS(val_peek(2).ival));
                                      sintactico.agregarAPolaca("OUT");
                                    }
 break;
 case 58:
-//#line 136 "gramatica.y"
+//#line 145 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + (AnalizadorLexico.linea - 1) + "): falta ';' al final de la salida por pantalla."); }
 break;
 case 59:
-//#line 137 "gramatica.y"
+//#line 146 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta ')' en la declaracion de la salida por pantalla."); }
 break;
 case 60:
-//#line 138 "gramatica.y"
+//#line 147 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta '(' en la declaracion de la salida por pantalla."); }
 break;
 case 61:
-//#line 139 "gramatica.y"
+//#line 148 "gramatica.y"
 {sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): se esperaba OUT, se encontro '('."); }
 break;
 case 62:
-//#line 140 "gramatica.y"
+//#line 149 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta declarar una cadena entre los parentesis para poder imprimir."); }
 break;
 case 63:
-//#line 143 "gramatica.y"
+//#line 152 "gramatica.y"
 {
                                                 if (sintactico.getErrorInvocacion() == false)
                                                     sintactico.agregarAnalisis("Se reconocio una invocacion a procedimiento. (Linea " + AnalizadorLexico.linea + ")");
@@ -935,99 +952,99 @@ case 63:
                                            }
 break;
 case 64:
-//#line 148 "gramatica.y"
+//#line 157 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta declarar el identificador del procedimiento a invocar."); }
 break;
 case 65:
-//#line 149 "gramatica.y"
+//#line 158 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + (AnalizadorLexico.linea - 1) + "): falta el ';' al final de la invocacion."); }
 break;
 case 70:
-//#line 156 "gramatica.y"
-{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
-break;
-case 71:
-//#line 157 "gramatica.y"
-{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
-break;
-case 72:
-//#line 158 "gramatica.y"
-{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
-break;
-case 73:
-//#line 159 "gramatica.y"
-{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
-break;
-case 74:
-//#line 160 "gramatica.y"
-{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
-break;
-case 75:
-//#line 161 "gramatica.y"
-{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
-break;
-case 76:
-//#line 162 "gramatica.y"
-{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
-break;
-case 77:
-//#line 163 "gramatica.y"
-{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta el parentesis que cierra los parametros formales."); sintactico.setErrorInvocacion(true);}
-break;
-case 78:
-//#line 164 "gramatica.y"
-{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
-break;
-case 79:
 //#line 165 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
 break;
-case 80:
+case 71:
 //#line 166 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
 break;
-case 81:
+case 72:
 //#line 167 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
 break;
-case 82:
+case 73:
 //#line 168 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
 break;
-case 83:
+case 74:
 //#line 169 "gramatica.y"
-{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta el parentesis que cierra los parametros formales."); sintactico.setErrorInvocacion(true);}
+{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
 break;
-case 84:
+case 75:
 //#line 170 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
 break;
-case 85:
+case 76:
 //#line 171 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
 break;
-case 86:
+case 77:
 //#line 172 "gramatica.y"
-{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta el parentesis que cierra los parametros formales."); sintactico.setErrorInvocacion(true);}
 break;
-case 87:
+case 78:
 //#line 173 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
 break;
-case 88:
+case 79:
 //#line 174 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
 break;
-case 89:
+case 80:
 //#line 175 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
 break;
-case 90:
+case 81:
 //#line 176 "gramatica.y"
+{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+break;
+case 82:
+//#line 177 "gramatica.y"
+{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+break;
+case 83:
+//#line 178 "gramatica.y"
+{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta el parentesis que cierra los parametros formales."); sintactico.setErrorInvocacion(true);}
+break;
+case 84:
+//#line 179 "gramatica.y"
+{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+break;
+case 85:
+//#line 180 "gramatica.y"
+{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+break;
+case 86:
+//#line 181 "gramatica.y"
+{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+break;
+case 87:
+//#line 182 "gramatica.y"
+{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+break;
+case 88:
+//#line 183 "gramatica.y"
+{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+break;
+case 89:
+//#line 184 "gramatica.y"
+{ sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): error en parametros formales."); sintactico.setErrorInvocacion(true);}
+break;
+case 90:
+//#line 185 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta el parentesis que cierra los parametros formales."); sintactico.setErrorInvocacion(true);}
 break;
 case 91:
-//#line 179 "gramatica.y"
+//#line 188 "gramatica.y"
 {
                                                            if (sintactico.getErrorIf() == false)
                                                                 sintactico.agregarAnalisis("Se reconocio una sentencia IF. (Linea " + AnalizadorLexico.linea + ")");
@@ -1035,11 +1052,11 @@ case 91:
                                                         }
 break;
 case 92:
-//#line 184 "gramatica.y"
+//#line 193 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta END_IF al final de la sentencia IF."); sintactico.setErrorIf(true);}
 break;
 case 93:
-//#line 185 "gramatica.y"
+//#line 194 "gramatica.y"
 {
                                                                              if (sintactico.getErrorIf() == false)
                                                                                   sintactico.agregarAnalisis("Se reconocio una sentencia IF ELSE. (Linea " + AnalizadorLexico.linea + ")");
@@ -1047,23 +1064,23 @@ case 93:
                                                                           }
 break;
 case 94:
-//#line 190 "gramatica.y"
+//#line 199 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta END_IF al final de la sentencia IF."); sintactico.setErrorIf(true);}
 break;
 case 95:
-//#line 191 "gramatica.y"
+//#line 200 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): faltan '(' en la condicion del IF."); sintactico.setErrorIf(true);}
 break;
 case 96:
-//#line 192 "gramatica.y"
+//#line 201 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): faltan ')' en la condicion del IF."); sintactico.setErrorIf(true);}
 break;
 case 97:
-//#line 193 "gramatica.y"
+//#line 202 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta la condicion del IF."); sintactico.setErrorIf(true);}
 break;
 case 98:
-//#line 196 "gramatica.y"
+//#line 205 "gramatica.y"
 { sintactico.agregarAPolacaEnPos(sintactico.popElementoPila(), "[" + (sintactico.getSizePolaca() + 2) + "]");
                                                                     sintactico.agregarAPolaca(" ");
                                                                     sintactico.pushElementoPila(sintactico.getSizePolaca() - 1);
@@ -1071,51 +1088,59 @@ case 98:
                                                                   }
 break;
 case 99:
-//#line 203 "gramatica.y"
+//#line 212 "gramatica.y"
 { sintactico.agregarAPolacaEnPos(sintactico.popElementoPila(), "[" + sintactico.getSizePolaca() + "]"); }
 break;
 case 101:
-//#line 207 "gramatica.y"
+//#line 216 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): condicion invalida."); }
 break;
 case 102:
-//#line 208 "gramatica.y"
+//#line 217 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): condicion invalida."); }
 break;
 case 103:
-//#line 212 "gramatica.y"
+//#line 221 "gramatica.y"
 { sintactico.agregarAnalisis("Se reconocio una declaracion de FOR. (Linea " + AnalizadorLexico.linea + ")"); }
 break;
 case 104:
-//#line 213 "gramatica.y"
+//#line 222 "gramatica.y"
 { sintactico.agregarAnalisis("Se reconocio un bloque de sentencias solo ejecutables. (Linea " + AnalizadorLexico.linea + ")"); }
 break;
 case 105:
-//#line 216 "gramatica.y"
+//#line 225 "gramatica.y"
 { sintactico.agregarAnalisis("Se reconocio la condicion de corte del FOR. (Linea " + AnalizadorLexico.linea + ")"); }
 break;
 case 106:
-//#line 219 "gramatica.y"
+//#line 228 "gramatica.y"
 { sintactico.agregarAnalisis("Se reconocio una suma. (Linea " + AnalizadorLexico.linea + ")");
                                       sintactico.agregarAPolaca("+");}
 break;
 case 107:
-//#line 221 "gramatica.y"
+//#line 230 "gramatica.y"
 { sintactico.agregarAnalisis("Se reconocio una resta. (Linea " + AnalizadorLexico.linea + ")");
                                       sintactico.agregarAPolaca("-");}
 break;
 case 109:
-//#line 226 "gramatica.y"
+//#line 235 "gramatica.y"
 { sintactico.agregarAnalisis("Se reconocio una multiplicacion. (Linea " + AnalizadorLexico.linea + ")");
                                   sintactico.agregarAPolaca("*");}
 break;
 case 110:
-//#line 228 "gramatica.y"
+//#line 237 "gramatica.y"
 { sintactico.agregarAnalisis("Se reconocio una division. (Linea " + AnalizadorLexico.linea + ")");
                                   sintactico.agregarAPolaca("/");}
 break;
+case 112:
+//#line 242 "gramatica.y"
+{   if (sintactico.getUsoFromTS(val_peek(0).ival).equals("VARIABLE"))
+                        sintactico.agregarAPolaca(sintactico.getLexemaFromTS(val_peek(0).ival));
+                    else
+                        sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): el identificador reconocido no es una variable.");
+                }
+break;
 case 113:
-//#line 234 "gramatica.y"
+//#line 247 "gramatica.y"
 {
                     String tipo = sintactico.getTipoFromTS(val_peek(0).ival);
                     if (tipo.equals("LONGINT"))
@@ -1124,52 +1149,54 @@ case 113:
                 }
 break;
 case 114:
-//#line 240 "gramatica.y"
+//#line 253 "gramatica.y"
 {
                         sintactico.setNegativoTablaSimb(val_peek(0).ival);
                     }
 break;
 case 115:
-//#line 245 "gramatica.y"
+//#line 258 "gramatica.y"
 { yyval.sval = new String("<"); }
 break;
 case 116:
-//#line 246 "gramatica.y"
+//#line 259 "gramatica.y"
 { yyval.sval = new String(">"); }
 break;
 case 117:
-//#line 247 "gramatica.y"
+//#line 260 "gramatica.y"
 { yyval.sval = new String("<="); }
 break;
 case 118:
-//#line 248 "gramatica.y"
+//#line 261 "gramatica.y"
 { yyval.sval = new String(">="); }
 break;
 case 119:
-//#line 249 "gramatica.y"
+//#line 262 "gramatica.y"
 { yyval.sval = new String("=="); }
 break;
 case 120:
-//#line 250 "gramatica.y"
+//#line 263 "gramatica.y"
 { yyval.sval = new String("!="); }
 break;
 case 121:
-//#line 253 "gramatica.y"
+//#line 266 "gramatica.y"
 {yyval.sval = new String("UP");}
 break;
 case 122:
-//#line 254 "gramatica.y"
+//#line 267 "gramatica.y"
 {yyval.sval = new String("DOWN");}
 break;
 case 123:
-//#line 257 "gramatica.y"
-{yyval.sval = new String("LONGINT");}
+//#line 270 "gramatica.y"
+{    sintactico.setTipo("LONGINT");
+                    yyval.sval = new String("LONGINT");}
 break;
 case 124:
-//#line 258 "gramatica.y"
-{yyval.sval = new String("FLOAT");}
+//#line 272 "gramatica.y"
+{      sintactico.setTipo("FLOAT");
+                    yyval.sval = new String("FLOAT");}
 break;
-//#line 1096 "Parser.java"
+//#line 1123 "Parser.java"
 //########## END OF USER-SUPPLIED ACTIONS ##########
     }//switch
     //#### Now let's reduce... ####

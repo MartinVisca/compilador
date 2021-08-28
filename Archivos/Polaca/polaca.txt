@@ -1,0 +1,4 @@
+FLOAT x;
+FLOAT y;
+FLOAT z;
+x = y + z;

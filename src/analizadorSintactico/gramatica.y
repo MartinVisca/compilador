@@ -107,8 +107,17 @@ lista_parametros_formales : ')'     // Sin parametros
                           | modificador tipo ID ',' modificador tipo ID ',' modificador tipo ID ',' error     { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): la cantidad de parametros formales del procedimiento fue excedida."); sintactico.setErrorProc(true); }
                           ;
 
-lista_variables : ID
-                | lista_variables ',' ID
+lista_variables : ID { sintactico.setAmbitoTablaSimb($1.ival);
+                       sintactico.setUsoTablaSimb($1.ival, "VARIABLE");
+                       if (!sintactico.variableFueDeclarada($1.ival))
+                            sintactico.setTipoVariableTablaSimb($1.ival);
+                     }
+                | lista_variables ',' ID {
+                                              sintactico.setAmbitoTablaSimb($1.ival);
+                                              sintactico.setUsoTablaSimb($1.ival, "VARIABLE");
+                                              if (!sintactico.variableFueDeclarada($1.ival))
+                                                    sintactico.setTipoVariableTablaSimb($1.ival);
+                                         }
                 | lista_variables ID error  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta la ',' para separar la lista de variables."); System.out.println($1.ival);}
                 | tipo error    { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): el tipo de la variable ya fue declarado."); }
                 ;
@@ -230,7 +239,11 @@ termino : termino '*' factor    { sintactico.agregarAnalisis("Se reconocio una m
         | factor
         ;
 
-factor : ID
+factor : ID     {   if (sintactico.getUsoFromTS($1.ival).equals("VARIABLE"))
+                        sintactico.agregarAPolaca(sintactico.getLexemaFromTS($1.ival));
+                    else
+                        sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): el identificador reconocido no es una variable.");
+                }
        | CTE    {
                     String tipo = sintactico.getTipoFromTS($1.ival);
                     if (tipo.equals("LONGINT"))
@@ -254,8 +267,10 @@ incr_decr : UP   {$$.sval = new String("UP");}
           | DOWN {$$.sval = new String("DOWN");}
           ;
 
-tipo : LONGINT {$$.sval = new String("LONGINT");}
-     | FLOAT {$$.sval = new String("FLOAT");}
+tipo : LONGINT {    sintactico.setTipo("LONGINT");
+                    $$.sval = new String("LONGINT");}
+     | FLOAT {      sintactico.setTipo("FLOAT");
+                    $$.sval = new String("FLOAT");}
      ;
 
 %%

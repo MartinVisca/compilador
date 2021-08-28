@@ -17,6 +17,7 @@ public class AnalizadorSintactico {
     private boolean errorIf = false;    // Variable para determinar si se produjo un error cuando se declara un IF
     private boolean errorInvocacion = false;    // Variable para determinar si se produjo un error en la invocacion de un PROC
     private String ambito = "main";     // Ambito principal del programa
+    private String tipo = "";       // Guarda el tipo para que cuando se haga una declaración se actualice el tipo del identificador en la TS
 
     // Estructuras
     private AnalizadorLexico lexico;    // Se utiliza para obtener los tokens y poder verificar la sintaxis del codigo
@@ -76,16 +77,31 @@ public class AnalizadorSintactico {
     // Método para obtener el tipo de un token almacenado en la tabla de símbolos, dado su índice
     public String getTipoFromTS(int indice) { return this.tablaSimbolos.get(indice).getTipoToken(); }
 
+    // Método para obtener el uso de un token almacenado en la tabla de símbolos, dado su índice
+    public String getUsoFromTS(int indice) { return this.tablaSimbolos.get(indice).getUso(); }
+
+    // Método para obtener el tipo de variable de un token almacenado en la tabla de símbolos, dado su índice
+    public String getTipoVariableFromTS(int indice) { return this.tablaSimbolos.get(indice).getTipoVariable(); }
+
     // Método para obtener un token de la tabla de símbolos dado su indice
     public RegistroSimbolo getRegistroFromTS(int indice) { return this.tablaSimbolos.get(indice); }
 
-    // Modifica el atributo uso de una determinada entrada de la tabla de símbolos
+    // Método para modificar el uso de un elemento en la tabla de símbolos
     public void setUsoTablaSimb(int indice, String uso) { this.tablaSimbolos.get(indice).setUso(uso); }
+
+    // Método para modificar el ámbito de un elemento en la tabla de símbolos
+    public void setAmbitoTablaSimb(int indice) { this.tablaSimbolos.get(indice).setAmbito(this.tablaSimbolos.get(indice).getLexema() + "@" + this.ambito); }
+
+    // Método para modificar el tipo (variable declarada en esta clase)
+    public void setTipo(String nuevoTipo) { this.tipo = nuevoTipo; }
+
+    // Método para modificar el tipo de variable de un elemento en la tabla de símbolos
+    public void setTipoVariableTablaSimb(int indice) { this.tablaSimbolos.get(indice).setTipoVariable(this.tipo); }
 
     // Agrega el signo '-' a los números negativos en la tabla de símbolos
     public void setNegativoTablaSimb(int indice) { this.tablaSimbolos.get(indice).setLexema('-' + this.tablaSimbolos.get(indice).getLexema()); }
 
-    // Método para verificar si una identificador ya fue declarado o no. Si fue declarado, agrega un error
+    // Método para verificar si un identificador ya fue declarado o no. Si fue declarado, agrega un error
     public boolean variableFueDeclarada(int referenciaATS) {
         String idAVerificar = this.tablaSimbolos.get(referenciaATS).getLexema();
         for (int i = 0; i < this.tablaSimbolos.size(); i++)
@@ -129,7 +145,7 @@ public class AnalizadorSintactico {
             System.out.println("Tabla de símbolos vacía");
         else {
             for (RegistroSimbolo simbolo : this.tablaSimbolos)
-                System.out.println("Tipo del simbolo: " + simbolo.getTipoToken() + " - Lexema: " + simbolo.getLexema());
+                System.out.println("Tipo del simbolo: " + simbolo.getTipoToken() + " - Lexema: " + simbolo.getLexema() + " - Tipo Variable: " + simbolo.getTipoVariable() + " - Uso: " + simbolo.getUso());
         }
     }
 
@@ -150,8 +166,8 @@ public class AnalizadorSintactico {
         }
 
         else {
-            for (int i = 0; i < this.listaErrores.size(); i++)
-                System.out.println(this.listaErrores.get(i));
+            for (String listaErrore : this.listaErrores)
+                System.out.println(listaErrore);
         }
     }
 

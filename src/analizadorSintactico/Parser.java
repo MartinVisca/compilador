@@ -577,7 +577,7 @@ final static String yyrule[] = {
 "tipo : FLOAT",
 };
 
-//#line 277 "gramatica.y"
+//#line 282 "gramatica.y"
 
 private AnalizadorLexico lexico;
 private AnalizadorSintactico sintactico;
@@ -1081,58 +1081,67 @@ case 97:
 break;
 case 98:
 //#line 205 "gramatica.y"
-{ sintactico.agregarAPolacaEnPos(sintactico.popElementoPila(), "[" + (sintactico.getSizePolaca() + 2) + "]");
-                                                                    sintactico.agregarAPolaca(" ");
-                                                                    sintactico.pushElementoPila(sintactico.getSizePolaca() - 1);
-                                                                    sintactico.agregarAPolaca("BI");
-                                                                  }
+{ sintactico.agregarAPolacaEnPos(sintactico.popElementoPila(), "[" + (sintactico.getSizePolaca() + 2) + "]");   /* Desapila dirección incompleta y completa el destino de BF*/
+                                      sintactico.agregarAPolaca(" ");   /* Crea paso incompleto*/
+                                      sintactico.pushElementoPila(sintactico.getSizePolaca() - 1);  /* Apila el nro de paso incompleto*/
+                                      sintactico.agregarAPolaca("BI");  /* Se crea el paso BI*/
+                                    }
 break;
 case 99:
 //#line 212 "gramatica.y"
 { sintactico.agregarAPolacaEnPos(sintactico.popElementoPila(), "[" + sintactico.getSizePolaca() + "]"); }
 break;
+case 100:
+//#line 215 "gramatica.y"
+{
+                                                sintactico.agregarAPolaca(val_peek(1).sval); /* Agregar comparador*/
+                                                sintactico.agregarAPolaca(" "); /* Crea paso incompleto*/
+                                                sintactico.pushElementoPila(sintactico.getSizePolaca() - 1);    /* Apila el nro de paso incompleto*/
+                                                sintactico.agregarAPolaca("BF");    /* Crea el paso BF*/
+                                            }
+break;
 case 101:
-//#line 216 "gramatica.y"
+//#line 221 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): condicion invalida."); }
 break;
 case 102:
-//#line 217 "gramatica.y"
+//#line 222 "gramatica.y"
 { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): condicion invalida."); }
 break;
 case 103:
-//#line 221 "gramatica.y"
+//#line 226 "gramatica.y"
 { sintactico.agregarAnalisis("Se reconocio una declaracion de FOR. (Linea " + AnalizadorLexico.linea + ")"); }
 break;
 case 104:
-//#line 222 "gramatica.y"
+//#line 227 "gramatica.y"
 { sintactico.agregarAnalisis("Se reconocio un bloque de sentencias solo ejecutables. (Linea " + AnalizadorLexico.linea + ")"); }
 break;
 case 105:
-//#line 225 "gramatica.y"
+//#line 230 "gramatica.y"
 { sintactico.agregarAnalisis("Se reconocio la condicion de corte del FOR. (Linea " + AnalizadorLexico.linea + ")"); }
 break;
 case 106:
-//#line 228 "gramatica.y"
+//#line 233 "gramatica.y"
 { sintactico.agregarAnalisis("Se reconocio una suma. (Linea " + AnalizadorLexico.linea + ")");
                                       sintactico.agregarAPolaca("+");}
 break;
 case 107:
-//#line 230 "gramatica.y"
+//#line 235 "gramatica.y"
 { sintactico.agregarAnalisis("Se reconocio una resta. (Linea " + AnalizadorLexico.linea + ")");
                                       sintactico.agregarAPolaca("-");}
 break;
 case 109:
-//#line 235 "gramatica.y"
+//#line 240 "gramatica.y"
 { sintactico.agregarAnalisis("Se reconocio una multiplicacion. (Linea " + AnalizadorLexico.linea + ")");
                                   sintactico.agregarAPolaca("*");}
 break;
 case 110:
-//#line 237 "gramatica.y"
+//#line 242 "gramatica.y"
 { sintactico.agregarAnalisis("Se reconocio una division. (Linea " + AnalizadorLexico.linea + ")");
                                   sintactico.agregarAPolaca("/");}
 break;
 case 112:
-//#line 242 "gramatica.y"
+//#line 247 "gramatica.y"
 {   if (sintactico.getUsoFromTS(val_peek(0).ival).equals("VARIABLE"))
                         sintactico.agregarAPolaca(sintactico.getLexemaFromTS(val_peek(0).ival));
                     else
@@ -1140,7 +1149,7 @@ case 112:
                 }
 break;
 case 113:
-//#line 247 "gramatica.y"
+//#line 252 "gramatica.y"
 {
                     String tipo = sintactico.getTipoFromTS(val_peek(0).ival);
                     if (tipo.equals("LONGINT"))
@@ -1149,54 +1158,54 @@ case 113:
                 }
 break;
 case 114:
-//#line 253 "gramatica.y"
+//#line 258 "gramatica.y"
 {
                         sintactico.setNegativoTablaSimb(val_peek(0).ival);
                     }
 break;
 case 115:
-//#line 258 "gramatica.y"
+//#line 263 "gramatica.y"
 { yyval.sval = new String("<"); }
 break;
 case 116:
-//#line 259 "gramatica.y"
+//#line 264 "gramatica.y"
 { yyval.sval = new String(">"); }
 break;
 case 117:
-//#line 260 "gramatica.y"
+//#line 265 "gramatica.y"
 { yyval.sval = new String("<="); }
 break;
 case 118:
-//#line 261 "gramatica.y"
+//#line 266 "gramatica.y"
 { yyval.sval = new String(">="); }
 break;
 case 119:
-//#line 262 "gramatica.y"
+//#line 267 "gramatica.y"
 { yyval.sval = new String("=="); }
 break;
 case 120:
-//#line 263 "gramatica.y"
+//#line 268 "gramatica.y"
 { yyval.sval = new String("!="); }
 break;
 case 121:
-//#line 266 "gramatica.y"
+//#line 271 "gramatica.y"
 {yyval.sval = new String("UP");}
 break;
 case 122:
-//#line 267 "gramatica.y"
+//#line 272 "gramatica.y"
 {yyval.sval = new String("DOWN");}
 break;
 case 123:
-//#line 270 "gramatica.y"
+//#line 275 "gramatica.y"
 {    sintactico.setTipo("LONGINT");
                     yyval.sval = new String("LONGINT");}
 break;
 case 124:
-//#line 272 "gramatica.y"
+//#line 277 "gramatica.y"
 {      sintactico.setTipo("FLOAT");
                     yyval.sval = new String("FLOAT");}
 break;
-//#line 1123 "Parser.java"
+//#line 1132 "Parser.java"
 //########## END OF USER-SUPPLIED ACTIONS ##########
     }//switch
     //#### Now let's reduce... ####

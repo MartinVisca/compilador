@@ -202,17 +202,22 @@ sentencia_if : IF '(' condicion ')' cuerpo_if END_IF    {
              | IF '(' ')'  error     { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): falta la condicion del IF."); sintactico.setErrorIf(true);}
              ;
 
-cuerpo_if : bloque_sentencias       { sintactico.agregarAPolacaEnPos(sintactico.popElementoPila(), "[" + (sintactico.getSizePolaca() + 2) + "]");
-                                                                    sintactico.agregarAPolaca(" ");
-                                                                    sintactico.pushElementoPila(sintactico.getSizePolaca() - 1);
-                                                                    sintactico.agregarAPolaca("BI");
-                                                                  }
+cuerpo_if : bloque_sentencias       { sintactico.agregarAPolacaEnPos(sintactico.popElementoPila(), "[" + (sintactico.getSizePolaca() + 2) + "]");   // Desapila dirección incompleta y completa el destino de BF
+                                      sintactico.agregarAPolaca(" ");   // Crea paso incompleto
+                                      sintactico.pushElementoPila(sintactico.getSizePolaca() - 1);  // Apila el nro de paso incompleto
+                                      sintactico.agregarAPolaca("BI");  // Se crea el paso BI
+                                    }
           ;
 
 cuerpo_else : bloque_sentencias     { sintactico.agregarAPolacaEnPos(sintactico.popElementoPila(), "[" + sintactico.getSizePolaca() + "]"); }
             ;
 
-condicion : expresion comparador expresion
+condicion : expresion comparador expresion  {
+                                                sintactico.agregarAPolaca($2.sval); // Agregar comparador
+                                                sintactico.agregarAPolaca(" "); // Crea paso incompleto
+                                                sintactico.pushElementoPila(sintactico.getSizePolaca() - 1);    // Apila el nro de paso incompleto
+                                                sintactico.agregarAPolaca("BF");    // Crea el paso BF
+                                            }
           | comparador error   { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): condicion invalida."); }
           | expresion comparador error  { sintactico.addErrorSintactico("ERROR SINTACTICO (Linea " + AnalizadorLexico.linea + "): condicion invalida."); }
           ;

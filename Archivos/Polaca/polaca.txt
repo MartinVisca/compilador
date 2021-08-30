@@ -1,4 +1,8 @@
-FLOAT x;
-FLOAT y;
-FLOAT z;
-x = y + z;
+LONGINT a;
+LONGINT k;
+LONGINT j;
+IF (a > k)
+	k = k * 5_l;
+ELSE
+	j = j - 3_l;
+END_IF
